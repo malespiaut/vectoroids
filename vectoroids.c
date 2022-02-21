@@ -619,7 +619,8 @@ int
 title(void)
 {
   int done = 0, quit = 0;
-  int i = 0, snapped = 0, angle = 0, size = 0, counter = 0, x = 0, y = 0, xm = 0, ym = 0, z1 = 0, z2 = 0, z3 = 0;
+  size_t snapped = 0;
+  int angle = 0, size = 0, counter = 0, x = 0, y = 0, xm = 0, ym = 0, z1 = 0, z2 = 0, z3 = 0;
   SDL_Event event;
   SDLKey key;
   Uint32 now_time = 0, last_time = 0;
@@ -629,9 +630,7 @@ title(void)
 
   /* Reset letters: */
 
-  snapped = 0;
-
-  for (i = 0; i < strlen(titlestr); i++)
+  for (size_t i = 0; i < strlen(titlestr); i++)
     {
       letters[i].x = (rand() % WIDTH);
       letters[i].y = (rand() % HEIGHT);
@@ -740,7 +739,7 @@ title(void)
 
       if (snapped < strlen(titlestr))
         {
-          for (i = 0; i < strlen(titlestr); i++)
+          for (size_t i = 0; i < strlen(titlestr); i++)
             {
               letters[i].x = letters[i].x + letters[i].xm;
               letters[i].y = letters[i].y + letters[i].ym;
@@ -790,7 +789,7 @@ title(void)
 
       if (snapped != strlen(titlestr))
         {
-          for (i = 0; i < strlen(titlestr); i++)
+          for (size_t i = 0; i < strlen(titlestr); i++)
             {
               draw_char(titlestr[i], letters[i].x, letters[i].y, 10,
                         mkcolor(255, 255, 255));
@@ -798,7 +797,7 @@ title(void)
         }
       else
         {
-          for (i = 0; i < strlen(titlestr); i++)
+          for (size_t i = 0; i < strlen(titlestr); i++)
             {
               z1 = (i + counter) % 255;
               z2 = ((i + counter + 128) * 2) % 255;
@@ -905,7 +904,6 @@ int
 game(void)
 {
   int done = 0, quit = 0, counter = 0;
-  int i = 0, j = 0;
   int num_asteroids_alive = 0;
   SDL_Event event;
   SDLKey key;
@@ -1200,7 +1198,7 @@ game(void)
 
                   if (!shift_pressed)
                     {
-                      for (i = 0; i < NUM_ASTEROIDS && player_alive; i++)
+                      for (size_t i = 0; i < NUM_ASTEROIDS && player_alive; i++)
                         {
                           if (asteroids[i].alive)
                             {
@@ -1254,7 +1252,7 @@ game(void)
 
       /* Move bullets: */
 
-      for (i = 0; i < NUM_BULLETS; i++)
+      for (size_t i = 0; i < NUM_BULLETS; i++)
         {
           if (bullets[i].timer >= 0)
             {
@@ -1289,7 +1287,7 @@ game(void)
 
               /* Check for collision with any asteroids! */
 
-              for (j = 0; j < NUM_ASTEROIDS; j++)
+              for (size_t j = 0; j < NUM_ASTEROIDS; j++)
                 {
                   if (bullets[i].timer > 0 && asteroids[j].alive)
                     {
@@ -1311,7 +1309,7 @@ game(void)
 
       num_asteroids_alive = 0;
 
-      for (i = 0; i < NUM_ASTEROIDS; i++)
+      for (size_t i = 0; i < NUM_ASTEROIDS; i++)
         {
           if (asteroids[i].alive)
             {
@@ -1407,7 +1405,7 @@ game(void)
 
       /* Move bits: */
 
-      for (i = 0; i < NUM_BITS; i++)
+      for (size_t i = 0; i < NUM_BITS; i++)
         {
           if (bits[i].timer > 0)
             {
@@ -1488,7 +1486,7 @@ game(void)
 
       /* Draw bullets: */
 
-      for (i = 0; i < NUM_BULLETS; i++)
+      for (size_t i = 0; i < NUM_BULLETS; i++)
         {
           if (bullets[i].timer >= 0)
             {
@@ -1540,7 +1538,7 @@ game(void)
 
       /* Draw asteroids: */
 
-      for (i = 0; i < NUM_ASTEROIDS; i++)
+      for (size_t i = 0; i < NUM_ASTEROIDS; i++)
         {
           if (asteroids[i].alive)
             {
@@ -1553,7 +1551,7 @@ game(void)
 
       /* Draw bits: */
 
-      for (i = 0; i < NUM_BITS; i++)
+      for (size_t i = 0; i < NUM_BITS; i++)
         {
           if (bits[i].timer > 0)
             {
@@ -1588,8 +1586,8 @@ game(void)
 #endif
 
       /* Draw lives: */
-
-      for (i = 0; i < lives; i++)
+      size_t k = 0;
+      for (size_t i = 0; i < lives; i++, k++)
         {
           draw_segment(16, 0, mkcolor(255, 255, 255),
                        4, 135, mkcolor(255, 255, 255),
@@ -1614,6 +1612,8 @@ game(void)
 
       if (player_die_timer > 0)
         {
+          size_t j = 0;
+
           if (player_die_timer > 30)
             {
               j = 30;
@@ -1625,22 +1625,22 @@ game(void)
 
           draw_segment((16 * j) / 30, 0, mkcolor(255, 255, 255),
                        (4 * j) / 30, 135, mkcolor(255, 255, 255),
-                       WIDTH - 10 - i * 10, 20,
+                       WIDTH - 10 - k * 10, 20,
                        90);
 
           draw_segment((8 * j) / 30, 135, mkcolor(255, 255, 255),
                        0, 0, mkcolor(255, 255, 255),
-                       WIDTH - 10 - i * 10, 20,
+                       WIDTH - 10 - k * 10, 20,
                        90);
 
           draw_segment(0, 0, mkcolor(255, 255, 255),
                        (8 * j) / 30, 225, mkcolor(255, 255, 255),
-                       WIDTH - 10 - i * 10, 20,
+                       WIDTH - 10 - k * 10, 20,
                        90);
 
           draw_segment((8 * j) / 30, 225, mkcolor(255, 255, 255),
                        (16 * j) / 30, 0, mkcolor(255, 255, 255),
-                       WIDTH - 10 - i * 10, 20,
+                       WIDTH - 10 - k * 10, 20,
                        90);
         }
 
@@ -1736,7 +1736,6 @@ finish(void)
 void
 setup(int argc, char* argv[])
 {
-  int i = 0;
   SDL_Surface* tmp = NULL;
 
   /* Options: */
@@ -1747,7 +1746,7 @@ setup(int argc, char* argv[])
 
   /* Check command-line options: */
 
-  for (i = 1; i < argc; i++)
+  for (size_t i = 1; i < argc; i++)
     {
       if (strcmp(argv[i], "--fullscreen") == 0 || strcmp(argv[i], "-f") == 0)
         {
@@ -2023,7 +2022,7 @@ setup(int argc, char* argv[])
 
   if (use_sound)
     {
-      for (i = 0; i < NUM_SOUNDS; i++)
+      for (size_t i = 0; i < NUM_SOUNDS; i++)
         {
           sounds[i] = Mix_LoadWAV(sound_names[i]);
           if (sounds[i] == NULL)
@@ -2547,11 +2546,11 @@ draw_segment(int r1, int a1,
 void
 add_bullet(int x, int y, int a, int xm, int ym)
 {
-  int i = 0, found = 0;
+  int found = 0;
 
   found = -1;
 
-  for (i = 0; i < NUM_BULLETS && found == -1; i++)
+  for (size_t i = 0; i < NUM_BULLETS && found == -1; i++)
     {
       if (bullets[i].timer <= 0)
         {
@@ -2582,13 +2581,13 @@ add_bullet(int x, int y, int a, int xm, int ym)
 void
 add_asteroid(int x, int y, int xm, int ym, int size)
 {
-  int i = 0, found = 0;
+  int found = 0;
 
   /* Find a slot: */
 
   found = -1;
 
-  for (i = 0; i < NUM_ASTEROIDS && found == -1; i++)
+  for (size_t i = 0; i < NUM_ASTEROIDS && found == -1; i++)
     {
       if (asteroids[i].alive == 0)
         {
@@ -2617,7 +2616,7 @@ add_asteroid(int x, int y, int xm, int ym, int size)
 
       asteroids[found].size = size;
 
-      for (i = 0; i < AST_SIDES; i++)
+      for (size_t i = 0; i < AST_SIDES; i++)
         {
           asteroids[found].shape[i].radius = (rand() % 3);
           asteroids[found].shape[i].angle = i * 60 + (rand() % 40);
@@ -2630,11 +2629,11 @@ add_asteroid(int x, int y, int xm, int ym, int size)
 void
 add_bit(int x, int y, int xm, int ym)
 {
-  int i = 0, found = 0;
+  int found = 0;
 
   found = -1;
 
-  for (i = 0; i < NUM_BITS && found == -1; i++)
+  for (size_t i = 0; i < NUM_BITS && found == -1; i++)
     {
       if (bits[i].timer <= 0)
         {
@@ -2658,7 +2657,7 @@ add_bit(int x, int y, int xm, int ym)
 void
 draw_asteroid(int size, int x, int y, int angle, shape_type* shape)
 {
-  int i = 0, b1 = 0, b2 = 0;
+  int b1 = 0, b2 = 0;
   int div = 0;
 
 #ifndef EMBEDDED
@@ -2667,7 +2666,7 @@ draw_asteroid(int size, int x, int y, int angle, shape_type* shape)
   div = 120;
 #endif
 
-  for (i = 0; i < AST_SIDES - 1; i++)
+  for (size_t i = 0; i < AST_SIDES - 1; i++)
     {
       b1 = (((shape[i].angle + angle) % 180) * 255) / div;
       b2 = (((shape[i + 1].angle + angle) % 180) * 255) / div;
@@ -2696,7 +2695,7 @@ draw_asteroid(int size, int x, int y, int angle, shape_type* shape)
 void
 playsound(int snd)
 {
-  int which = 0, i = 0;
+  int which = 0;
 
 #ifndef NOSOUND
   if (use_sound)
@@ -2705,7 +2704,7 @@ playsound(int snd)
       which = -1;
 #else
       which = (rand() % 3) + CHAN_THRUST;
-      for (i = CHAN_THRUST; i < 4; i++)
+      for (size_t i = CHAN_THRUST; i < 4; i++)
         {
           if (!Mix_Playing(i))
             {
@@ -2724,8 +2723,6 @@ playsound(int snd)
 void
 hurt_asteroid(int j, int xm, int ym, int exp_size)
 {
-  int k = 0;
-
   add_score(100 / (asteroids[j].size + 1));
 
   if (asteroids[j].size > 1)
@@ -2753,7 +2750,7 @@ hurt_asteroid(int j, int xm, int ym, int exp_size)
 
   playsound(SND_AST1 + (asteroids[j].size) - 1);
 
-  for (k = 0; k < exp_size; k++)
+  for (size_t k = 0; k < exp_size; k++)
     {
       add_bit((asteroids[j].x - (asteroids[j].size * AST_RADIUS) + (rand() % (AST_RADIUS * 2))),
               (asteroids[j].y - (asteroids[j].size * AST_RADIUS) + (rand() % (AST_RADIUS * 2))),
@@ -2787,7 +2784,7 @@ add_score(int amount)
 void
 draw_char(char c, int x, int y, int r, color_type cl)
 {
-  int i = 0, v = 0;
+  int v = 0;
 
   /* Which vector is this character? */
 
@@ -2803,7 +2800,7 @@ draw_char(char c, int x, int y, int r, color_type cl)
 
   if (v != -1)
     {
-      for (i = 0; i < 5; i++)
+      for (size_t i = 0; i < 5; i++)
         {
           if (char_vectors[v][i][0] != -1)
             {
@@ -2821,9 +2818,7 @@ draw_char(char c, int x, int y, int r, color_type cl)
 void
 draw_text(char* str, int x, int y, int s, color_type c)
 {
-  int i = 0;
-
-  for (i = 0; i < strlen(str); i++)
+  for (size_t i = 0; i < strlen(str); i++)
     {
       draw_char(str[i], i * (s + 3) + x, y, s, c);
     }
@@ -2840,24 +2835,22 @@ draw_thick_line(int x1, int y1, color_type c1,
 void
 reset_level(void)
 {
-  int i = 0;
-
-  for (i = 0; i < NUM_BULLETS; i++)
+  for (size_t i = 0; i < NUM_BULLETS; i++)
     {
       bullets[i].timer = 0;
     }
 
-  for (i = 0; i < NUM_ASTEROIDS; i++)
+  for (size_t i = 0; i < NUM_ASTEROIDS; i++)
     {
       asteroids[i].alive = 0;
     }
 
-  for (i = 0; i < NUM_BITS; i++)
+  for (size_t i = 0; i < NUM_BITS; i++)
     {
       bits[i].timer = 0;
     }
 
-  for (i = 0; i < (level + 1) && i < 10; i++)
+  for (size_t i = 0; i < (level + 1) && i < 10; i++)
     {
 #ifndef EMBEDDED
       add_asteroid(/* x */ (rand() % 40) + ((WIDTH - 40) * (rand() % 2)),
