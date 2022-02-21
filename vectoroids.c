@@ -22,6 +22,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -501,8 +502,8 @@ void draw_centered_text(char* str, int y, int s, color_type c);
 int
 main(int argc, char* argv[])
 {
-  int done;
-  FILE* fi;
+  int done = 0;
+  FILE* fi = NULL;
   char statefile[256], buf[256];
 
   setup(argc, argv);
@@ -617,11 +618,11 @@ main(int argc, char* argv[])
 int
 title(void)
 {
-  int done, quit;
-  int i, snapped, angle, size, counter, x, y, xm, ym, z1, z2, z3;
+  int done = 0, quit = 0;
+  int i = 0, snapped = 0, angle = 0, size = 0, counter = 0, x = 0, y = 0, xm = 0, ym = 0, z1 = 0, z2 = 0, z3 = 0;
   SDL_Event event;
   SDLKey key;
-  Uint32 now_time, last_time;
+  Uint32 now_time = 0, last_time = 0;
   char* titlestr = "VECTOROIDS";
   char str[20];
   letter_type letters[11];
@@ -881,14 +882,14 @@ title(void)
 int
 game(void)
 {
-  int done, quit, counter;
-  int i, j;
-  int num_asteroids_alive;
+  int done = 0, quit = 0, counter = 0;
+  int i = 0, j = 0;
+  int num_asteroids_alive = 0;
   SDL_Event event;
   SDLKey key;
-  int left_pressed, right_pressed, up_pressed, shift_pressed;
+  int left_pressed = 0, right_pressed = 0, up_pressed = 0, shift_pressed = 0;
   char str[10];
-  Uint32 now_time, last_time;
+  Uint32 now_time = 0, last_time = 0;
 
   done = 0;
   quit = 0;
@@ -1661,8 +1662,8 @@ finish(void)
 void
 setup(int argc, char* argv[])
 {
-  int i;
-  SDL_Surface* tmp;
+  int i = 0;
+  SDL_Surface* tmp = NULL;
 
   /* Options: */
 
@@ -1987,9 +1988,9 @@ void
 seticon(void)
 {
 #ifndef EMBEDDED
-  int masklen;
-  Uint8* mask;
-  SDL_Surface* icon;
+  int masklen = 0;
+  Uint8* mask = NULL;
+  SDL_Surface* icon = NULL;
 
   /* Load icon into a surface: */
 
@@ -2100,11 +2101,11 @@ void
 sdl_drawline(int x1, int y1, color_type c1,
              int x2, int y2, color_type c2)
 {
-  int dx, dy;
+  int dx = 0, dy = 0;
 #ifndef EMBEDDED
-  float cr, cg, cb, rd, gd, bd;
+  float cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
 #endif
-  float m, b;
+  float m = NAN, b = NAN;
 
   if (clip(&x1, &y1, &x2, &y2))
     {
@@ -2165,11 +2166,11 @@ clip(int* x1, int* y1, int* x2, int* y2)
 {
 #ifndef EMBEDDED
 
-  float fx1, fx2, fy1, fy2, tmp;
-  float m;
-  unsigned char code1, code2;
-  int done, draw, swapped;
-  unsigned char ctmp;
+  float fx1 = NAN, fx2 = NAN, fy1 = NAN, fy2 = NAN, tmp = NAN;
+  float m = NAN;
+  unsigned char code1 = 0, code2 = 0;
+  int done = 0, draw = 0, swapped = 0;
+  unsigned char ctmp = 0;
   fx1 = (float)*x1;
   fy1 = (float)*y1;
   fx2 = (float)*x2;
@@ -2274,7 +2275,7 @@ clip(int* x1, int* y1, int* x2, int* y2)
 unsigned char
 encode(float x, float y)
 {
-  unsigned char code;
+  unsigned char code = 0;
 
   code = 0x00;
 
@@ -2297,9 +2298,9 @@ void
 drawvertline(int x, int y1, color_type c1,
              int y2, color_type c2)
 {
-  int tmp, dy;
+  int tmp = 0, dy = 0;
 #ifndef EMBEDDED
-  float cr, cg, cb, rd, gd, bd;
+  float cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
 #else
   int cr, cg, cb;
 #endif
@@ -2363,8 +2364,8 @@ drawvertline(int x, int y1, color_type c1,
 void
 putpixel(SDL_Surface* surface, int x, int y, Uint32 pixel)
 {
-  int bpp;
-  Uint8* p;
+  int bpp = 0;
+  Uint8* p = NULL;
 
   /* Assuming the X/Y values are within the bounds of this surface... */
 
@@ -2432,7 +2433,7 @@ draw_segment(int r1, int a1,
 void
 add_bullet(int x, int y, int a, int xm, int ym)
 {
-  int i, found;
+  int i = 0, found = 0;
 
   found = -1;
 
@@ -2465,7 +2466,7 @@ add_bullet(int x, int y, int a, int xm, int ym)
 void
 add_asteroid(int x, int y, int xm, int ym, int size)
 {
-  int i, found;
+  int i = 0, found = 0;
 
   /* Find a slot: */
 
@@ -2511,7 +2512,7 @@ add_asteroid(int x, int y, int xm, int ym, int size)
 void
 add_bit(int x, int y, int xm, int ym)
 {
-  int i, found;
+  int i = 0, found = 0;
 
   found = -1;
 
@@ -2537,8 +2538,8 @@ add_bit(int x, int y, int xm, int ym)
 void
 draw_asteroid(int size, int x, int y, int angle, shape_type* shape)
 {
-  int i, b1, b2;
-  int div;
+  int i = 0, b1 = 0, b2 = 0;
+  int div = 0;
 
 #ifndef EMBEDDED
   div = 240;
@@ -2575,7 +2576,7 @@ draw_asteroid(int size, int x, int y, int angle, shape_type* shape)
 void
 playsound(int snd)
 {
-  int which, i;
+  int which = 0, i = 0;
 
 #ifndef NOSOUND
   if (use_sound)
@@ -2601,7 +2602,7 @@ playsound(int snd)
 void
 hurt_asteroid(int j, int xm, int ym, int exp_size)
 {
-  int k;
+  int k = 0;
 
   add_score(100 / (asteroids[j].size + 1));
 
@@ -2664,7 +2665,7 @@ add_score(int amount)
 void
 draw_char(char c, int x, int y, int r, color_type cl)
 {
-  int i, v;
+  int i = 0, v = 0;
 
   /* Which vector is this character? */
 
@@ -2694,7 +2695,7 @@ draw_char(char c, int x, int y, int r, color_type cl)
 void
 draw_text(char* str, int x, int y, int s, color_type c)
 {
-  int i;
+  int i = 0;
 
   for (i = 0; i < strlen(str); i++)
     draw_char(str[i], i * (s + 3) + x, y, s, c);
@@ -2711,7 +2712,7 @@ draw_thick_line(int x1, int y1, color_type c1,
 void
 reset_level(void)
 {
-  int i;
+  int i = 0;
 
   for (i = 0; i < NUM_BULLETS; i++)
     bullets[i].timer = 0;
@@ -2770,7 +2771,7 @@ set_vid_mode(unsigned flags)
 {
   /* Prefer 16bpp, but also prefer native modes to emulated 16bpp. */
 
-  int depth;
+  int depth = 0;
 
   depth = SDL_VideoModeOK(WIDTH, HEIGHT, 16, flags);
   return depth ? SDL_SetVideoMode(WIDTH, HEIGHT, depth, flags) : NULL;
