@@ -666,7 +666,9 @@ title(void)
       if ((counter % 3) == 0)
         {
           if (size > 1)
-            size--;
+            {
+              size--;
+            }
         }
 
       /* Move rock: */
@@ -674,14 +676,20 @@ title(void)
       x = x + xm;
 
       if (x >= WIDTH)
-        x = x - WIDTH;
+        {
+          x = x - WIDTH;
+        }
 
       y = y + ym;
 
       if (y >= HEIGHT)
-        y = y - HEIGHT;
+        {
+          y = y - HEIGHT;
+        }
       else if (y < 0)
-        y = y + HEIGHT;
+        {
+          y = y + HEIGHT;
+        }
 
       /* Handle events: */
 
@@ -740,14 +748,22 @@ title(void)
               /* Home in on final spot! */
 
               if (letters[i].x > ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) && letters[i].xm > -4)
-                letters[i].xm--;
+                {
+                  letters[i].xm--;
+                }
               else if (letters[i].x < ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) && letters[i].xm < 4)
-                letters[i].xm++;
+                {
+                  letters[i].xm++;
+                }
 
               if (letters[i].y > 100 && letters[i].ym > -4)
-                letters[i].ym--;
+                {
+                  letters[i].ym--;
+                }
               else if (letters[i].y < 100 && letters[i].ym < 4)
-                letters[i].ym++;
+                {
+                  letters[i].ym++;
+                }
 
               /* Snap into place: */
 
@@ -809,9 +825,13 @@ title(void)
           if (score != 0 && (score != high || (counter % 20) < 10))
             {
               if (game_pending == 0)
-                sprintf(str, "LAST %.6d", score);
+                {
+                  sprintf(str, "LAST %.6d", score);
+                }
               else
-                sprintf(str, "SCR  %.6d", score);
+                {
+                  sprintf(str, "SCR  %.6d", score);
+                }
               draw_text(str, (WIDTH - 110) / 2, 25, 5, mkcolor(128, 128, 255));
               draw_text(str, (WIDTH - 110) / 2 + 1, 26, 5, mkcolor(128, 128, 255));
             }
@@ -820,7 +840,9 @@ title(void)
       draw_text("START", (WIDTH - 50) / 2, 180, 5, mkcolor(0, 255, 0));
 
       if (game_pending)
-        draw_text("CONTINUE", (WIDTH - 80) / 2, 200, 5, mkcolor(0, 255, 0));
+        {
+          draw_text("CONTINUE", (WIDTH - 80) / 2, 200, 5, mkcolor(0, 255, 0));
+        }
 
       /* (Giant rock) */
 
@@ -922,7 +944,9 @@ game(void)
   /* Hide mouse cursor: */
 
   if (fullscreen)
-    SDL_ShowCursor(0);
+    {
+      SDL_ShowCursor(0);
+    }
 
     /* Play music: */
 
@@ -930,7 +954,9 @@ game(void)
   if (use_sound)
     {
       if (!Mix_PlayingMusic())
-        Mix_PlayMusic(game_music, -1);
+        {
+          Mix_PlayMusic(game_music, -1);
+        }
     }
 #endif
 
@@ -1087,13 +1113,17 @@ game(void)
         {
           angle = angle - 8;
           if (angle < 0)
-            angle = angle + 360;
+            {
+              angle = angle + 360;
+            }
         }
       else if (left_pressed)
         {
           angle = angle + 8;
           if (angle >= 360)
-            angle = angle - 360;
+            {
+              angle = angle - 360;
+            }
         }
 
       /* Thrust ship: */
@@ -1205,14 +1235,22 @@ game(void)
       /* Wrap ship around edges of screen: */
 
       if (x >= (WIDTH << 4))
-        x = x - (WIDTH << 4);
+        {
+          x = x - (WIDTH << 4);
+        }
       else if (x < 0)
-        x = x + (WIDTH << 4);
+        {
+          x = x + (WIDTH << 4);
+        }
 
       if (y >= (HEIGHT << 4))
-        y = y - (HEIGHT << 4);
+        {
+          y = y - (HEIGHT << 4);
+        }
       else if (y < 0)
-        y = y + (HEIGHT << 4);
+        {
+          y = y + (HEIGHT << 4);
+        }
 
       /* Move bullets: */
 
@@ -1232,14 +1270,22 @@ game(void)
               /* Wrap bullet around edges of screen: */
 
               if (bullets[i].x >= WIDTH)
-                bullets[i].x = bullets[i].x - WIDTH;
+                {
+                  bullets[i].x = bullets[i].x - WIDTH;
+                }
               else if (bullets[i].x < 0)
-                bullets[i].x = bullets[i].x + WIDTH;
+                {
+                  bullets[i].x = bullets[i].x + WIDTH;
+                }
 
               if (bullets[i].y >= HEIGHT)
-                bullets[i].y = bullets[i].y - HEIGHT;
+                {
+                  bullets[i].y = bullets[i].y - HEIGHT;
+                }
               else if (bullets[i].y < 0)
-                bullets[i].y = bullets[i].y + HEIGHT;
+                {
+                  bullets[i].y = bullets[i].y + HEIGHT;
+                }
 
               /* Check for collision with any asteroids! */
 
@@ -1282,14 +1328,22 @@ game(void)
               /* Wrap asteroid around edges of screen: */
 
               if (asteroids[i].x >= WIDTH)
-                asteroids[i].x = asteroids[i].x - WIDTH;
+                {
+                  asteroids[i].x = asteroids[i].x - WIDTH;
+                }
               else if (asteroids[i].x < 0)
-                asteroids[i].x = asteroids[i].x + WIDTH;
+                {
+                  asteroids[i].x = asteroids[i].x + WIDTH;
+                }
 
               if (asteroids[i].y >= HEIGHT)
-                asteroids[i].y = asteroids[i].y - HEIGHT;
+                {
+                  asteroids[i].y = asteroids[i].y - HEIGHT;
+                }
               else if (asteroids[i].y < 0)
-                asteroids[i].y = asteroids[i].y + HEIGHT;
+                {
+                  asteroids[i].y = asteroids[i].y + HEIGHT;
+                }
 
               /* Rotate asteroid: */
 
@@ -1298,9 +1352,13 @@ game(void)
               /* Wrap rotation angle... */
 
               if (asteroids[i].angle < 0)
-                asteroids[i].angle = asteroids[i].angle + 360;
+                {
+                  asteroids[i].angle = asteroids[i].angle + 360;
+                }
               else if (asteroids[i].angle >= 360)
-                asteroids[i].angle = asteroids[i].angle - 360;
+                {
+                  asteroids[i].angle = asteroids[i].angle - 360;
+                }
 
               /* See if we collided with the player: */
 
@@ -1365,14 +1423,22 @@ game(void)
               /* Wrap bit around edges of screen: */
 
               if (bits[i].x >= WIDTH)
-                bits[i].x = bits[i].x - WIDTH;
+                {
+                  bits[i].x = bits[i].x - WIDTH;
+                }
               else if (bits[i].x < 0)
-                bits[i].x = bits[i].x + WIDTH;
+                {
+                  bits[i].x = bits[i].x + WIDTH;
+                }
 
               if (bits[i].y >= HEIGHT)
-                bits[i].y = bits[i].y - HEIGHT;
+                {
+                  bits[i].y = bits[i].y - HEIGHT;
+                }
               else if (bits[i].y < 0)
-                bits[i].y = bits[i].y + HEIGHT;
+                {
+                  bits[i].y = bits[i].y + HEIGHT;
+                }
             }
         }
 
@@ -1549,9 +1615,13 @@ game(void)
       if (player_die_timer > 0)
         {
           if (player_die_timer > 30)
-            j = 30;
+            {
+              j = 30;
+            }
           else
-            j = player_die_timer;
+            {
+              j = player_die_timer;
+            }
 
           draw_segment((16 * j) / 30, 0, mkcolor(255, 255, 255),
                        (4 * j) / 30, 135, mkcolor(255, 255, 255),
@@ -1579,7 +1649,9 @@ game(void)
       if (text_zoom > 0)
         {
           if ((counter % 2) == 0)
-            text_zoom--;
+            {
+              text_zoom--;
+            }
 
 #ifndef EMBEDDED
           draw_text(zoom_str, (WIDTH - (strlen(zoom_str) * text_zoom)) / 2,
@@ -1648,7 +1720,9 @@ game(void)
   /* Display mouse cursor: */
 
   if (fullscreen)
-    SDL_ShowCursor(1);
+    {
+      SDL_ShowCursor(1);
+    }
 
   return (quit);
 }
@@ -2030,13 +2104,21 @@ fast_cos(int angle)
   angle = (angle % 45);
 
   if (angle < 12)
-    return (trig[angle]);
+    {
+      return (trig[angle]);
+    }
   else if (angle < 23)
-    return (-trig[10 - (angle - 12)]);
+    {
+      return (-trig[10 - (angle - 12)]);
+    }
   else if (angle < 34)
-    return (-trig[angle - 22]);
+    {
+      return (-trig[angle - 22]);
+    }
   else
-    return (trig[45 - angle]);
+    {
+      return (trig[45 - angle]);
+    }
 }
 
 /* Sine based on fast cosine... */
@@ -2082,11 +2164,17 @@ mkcolor(int r, int g, int b)
   color_type c;
 
   if (r > 255)
-    r = 255;
+    {
+      r = 255;
+    }
   if (g > 255)
-    g = 255;
+    {
+      g = 255;
+    }
   if (b > 255)
-    b = 255;
+    {
+      b = 255;
+    }
 
   c.r = (Uint8)r;
   c.g = (Uint8)g;
@@ -2118,9 +2206,13 @@ sdl_drawline(int x1, int y1, color_type c1,
           b = y1 - m * x1;
 
           if (x2 >= x1)
-            dx = 1;
+            {
+              dx = 1;
+            }
           else
-            dx = -1;
+            {
+              dx = -1;
+            }
 
 #ifndef EMBEDDED
           cr = c1.r;
@@ -2155,7 +2247,9 @@ sdl_drawline(int x1, int y1, color_type c1,
             }
         }
       else
-        drawvertline(x1, y1, c1, y2, c2);
+        {
+          drawvertline(x1, y1, c1, y2, c2);
+        }
     }
 }
 
@@ -2214,9 +2308,13 @@ clip(int* x1, int* y1, int* x2, int* y2)
             }
 
           if (fx2 != fx1)
-            m = (fy2 - fy1) / (fx2 - fx1);
+            {
+              m = (fy2 - fy1) / (fx2 - fx1);
+            }
           else
-            m = 1;
+            {
+              m = 1;
+            }
 
           if (code1 & LEFT_EDGE)
             {
@@ -2231,13 +2329,17 @@ clip(int* x1, int* y1, int* x2, int* y2)
           else if (code1 & TOP_EDGE)
             {
               if (fx2 != fx1)
-                fx1 += ((0 - (fy1)) / m);
+                {
+                  fx1 += ((0 - (fy1)) / m);
+                }
               fy1 = 0;
             }
           else if (code1 & BOTTOM_EDGE)
             {
               if (fx2 != fx1)
-                fx1 += (((HEIGHT - 1) - (fy1)) / m);
+                {
+                  fx1 += (((HEIGHT - 1) - (fy1)) / m);
+                }
               fy1 = (HEIGHT - 1);
             }
         }
@@ -2280,14 +2382,22 @@ encode(float x, float y)
   code = 0x00;
 
   if (x < 0.0)
-    code = code | LEFT_EDGE;
+    {
+      code = code | LEFT_EDGE;
+    }
   else if (x >= (float)WIDTH)
-    code = code | RIGHT_EDGE;
+    {
+      code = code | RIGHT_EDGE;
+    }
 
   if (y < 0.0)
-    code = code | TOP_EDGE;
+    {
+      code = code | TOP_EDGE;
+    }
   else if (y >= (float)HEIGHT)
-    code = code | BOTTOM_EDGE;
+    {
+      code = code | BOTTOM_EDGE;
+    }
 
   return code;
 }
@@ -2386,9 +2496,13 @@ putpixel(SDL_Surface* surface, int x, int y, Uint32 pixel)
          to the pixel value sent in: */
 
       if (bpp == 1)
-        *p = pixel;
+        {
+          *p = pixel;
+        }
       else if (bpp == 2)
-        *(Uint16*)p = pixel;
+        {
+          *(Uint16*)p = pixel;
+        }
       else if (bpp == 3)
         {
           if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
@@ -2440,7 +2554,9 @@ add_bullet(int x, int y, int a, int xm, int ym)
   for (i = 0; i < NUM_BULLETS && found == -1; i++)
     {
       if (bullets[i].timer <= 0)
-        found = i;
+        {
+          found = i;
+        }
     }
 
   if (found != -1)
@@ -2475,7 +2591,9 @@ add_asteroid(int x, int y, int xm, int ym, int size)
   for (i = 0; i < NUM_ASTEROIDS && found == -1; i++)
     {
       if (asteroids[i].alive == 0)
-        found = i;
+        {
+          found = i;
+        }
     }
 
   /* Hack: No asteroids should be stationary! */
@@ -2519,7 +2637,9 @@ add_bit(int x, int y, int xm, int ym)
   for (i = 0; i < NUM_BITS && found == -1; i++)
     {
       if (bits[i].timer <= 0)
-        found = i;
+        {
+          found = i;
+        }
     }
 
   if (found != -1)
@@ -2588,7 +2708,9 @@ playsound(int snd)
       for (i = CHAN_THRUST; i < 4; i++)
         {
           if (!Mix_Playing(i))
-            which = i;
+            {
+              which = i;
+            }
         }
 #endif
 
@@ -2671,9 +2793,13 @@ draw_char(char c, int x, int y, int r, color_type cl)
 
   v = -1;
   if (c >= '0' && c <= '9')
-    v = (c - '0');
+    {
+      v = (c - '0');
+    }
   else if (c >= 'A' && c <= 'Z')
-    v = (c - 'A') + 10;
+    {
+      v = (c - 'A') + 10;
+    }
 
   if (v != -1)
     {
@@ -2698,7 +2824,9 @@ draw_text(char* str, int x, int y, int s, color_type c)
   int i = 0;
 
   for (i = 0; i < strlen(str); i++)
-    draw_char(str[i], i * (s + 3) + x, y, s, c);
+    {
+      draw_char(str[i], i * (s + 3) + x, y, s, c);
+    }
 }
 
 void
@@ -2715,13 +2843,19 @@ reset_level(void)
   int i = 0;
 
   for (i = 0; i < NUM_BULLETS; i++)
-    bullets[i].timer = 0;
+    {
+      bullets[i].timer = 0;
+    }
 
   for (i = 0; i < NUM_ASTEROIDS; i++)
-    asteroids[i].alive = 0;
+    {
+      asteroids[i].alive = 0;
+    }
 
   for (i = 0; i < NUM_BITS; i++)
-    bits[i].timer = 0;
+    {
+      bits[i].timer = 0;
+    }
 
   for (i = 0; i < (level + 1) && i < 10; i++)
     {
