@@ -162,21 +162,22 @@ char* mus_game_name = DATA_PREFIX "music/decision.s3m";
 
 /* Globals: */
 
-SDL_Surface *screen, *bkgd;
+SDL_Surface *screen = 0, *bkgd = 0;
 #ifndef NOSOUND
-Mix_Chunk* sounds[NUM_SOUNDS];
-Mix_Music* game_music;
+Mix_Chunk* sounds[NUM_SOUNDS] = {0};
+Mix_Music* game_music = 0;
 #endif
 #ifdef JOY_YES
-SDL_Joystick* js;
+SDL_Joystick* js = 0;
 #endif
-bullet_type bullets[NUM_BULLETS];
-asteroid_type asteroids[NUM_ASTEROIDS];
-bit_type bits[NUM_BITS];
-int32_t use_sound, use_joystick, fullscreen, text_zoom;
-char zoom_str[24];
-int32_t x, y, xm, ym, angle;
-int32_t player_alive, player_die_timer;
+bullet_type bullets[NUM_BULLETS] = {0};
+asteroid_type asteroids[NUM_ASTEROIDS] = {0};
+bit_type bits[NUM_BITS] = {0};
+bool use_sound = true, use_joystick = false, fullscreen = false;
+int32_t text_zoom = 0;
+char zoom_str[24] = {0};
+int32_t x = 0, y = 0, xm = 0, ym = 0, angle = 0;
+int32_t player_alive = 0, player_die_timer = 0;
 size_t lives = 0, score = 0, high = 0, level = 0;
 bool game_pending = false;
 
@@ -612,12 +613,12 @@ title(void)
   int32_t done = 0, quit = 0;
   size_t snapped = 0;
   int32_t angle = 0, size = 0, counter = 0, x = 0, y = 0, xm = 0, ym = 0, z1 = 0, z2 = 0, z3 = 0;
-  SDL_Event event;
-  SDLKey key;
+  SDL_Event event = {0};
+  SDLKey key = {0};
   uint32_t now_time = 0, last_time = 0;
   char* titlestr = "VECTOROIDS";
-  char str[20];
-  letter_type letters[11];
+  char str[20] = {0};
+  letter_type letters[11] = {0};
 
   /* Reset letters: */
 
@@ -896,10 +897,10 @@ game(void)
 {
   int32_t done = 0, quit = 0, counter = 0;
   int32_t num_asteroids_alive = 0;
-  SDL_Event event;
-  SDLKey key;
+  SDL_Event event = {0};
+  SDLKey key = {0};
   int32_t left_pressed = 0, right_pressed = 0, up_pressed = 0, shift_pressed = 0;
-  char str[10];
+  char str[10] = {0};
   uint32_t now_time = 0, last_time = 0;
 
   done = 0;
@@ -1729,12 +1730,6 @@ setup(int32_t argc, char* argv[])
 {
   SDL_Surface* tmp = NULL;
 
-  /* Options: */
-
-  score = 0;
-  use_sound = true;
-  fullscreen = false;
-
   /* Check command-line options: */
 
   for (size_t i = 1; i < argc; i++)
@@ -1833,7 +1828,7 @@ setup(int32_t argc, char* argv[])
     /* Init joysticks: */
 
 #ifdef JOY_YES
-  use_joystick = 1;
+  use_joystick = true;
 
   if (SDL_Init(SDL_INIT_JOYSTICK) < 0)
     {
@@ -1843,7 +1838,7 @@ setup(int32_t argc, char* argv[])
               "%s\n\n",
               SDL_GetError());
 
-      use_joystick = 0;
+      use_joystick = false;
     }
   else
     {
@@ -1854,7 +1849,7 @@ setup(int32_t argc, char* argv[])
           fprintf(stderr,
                   "\nWarning: No joysticks available.\n");
 
-          use_joystick = 0;
+          use_joystick = false;
         }
       else
         {
@@ -1870,7 +1865,7 @@ setup(int32_t argc, char* argv[])
                       "%s\n\n",
                       SDL_GetError());
 
-              use_joystick = 0;
+              use_joystick = false;
             }
           else
             {
@@ -1881,7 +1876,7 @@ setup(int32_t argc, char* argv[])
                   fprintf(stderr,
                           "\nWarning: Joystick doesn't have enough axes!\n");
 
-                  use_joystick = 0;
+                  use_joystick = false;
                 }
               else
                 {
@@ -1891,14 +1886,14 @@ setup(int32_t argc, char* argv[])
                               "\nWarning: Joystick doesn't have enough "
                               "buttons!\n");
 
-                      use_joystick = 0;
+                      use_joystick = false;
                     }
                 }
             }
         }
     }
 #else
-  use_joystick = 0;
+  use_joystick = false;
 #endif
 
   /* Open window: */
@@ -1915,7 +1910,7 @@ setup(int32_t argc, char* argv[])
                   "The Simple DirectMedia error that occured was:\n"
                   "%s\n\n",
                   WIDTH, HEIGHT, SDL_GetError());
-          fullscreen = 0;
+          fullscreen = false;
         }
     }
 
