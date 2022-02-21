@@ -72,12 +72,6 @@
 #define HEIGHT 320
 #endif
 
-enum
-{
-  FALSE,
-  TRUE
-};
-
 #define LEFT_EDGE 0x0001
 #define RIGHT_EDGE 0x0002
 #define TOP_EDGE 0x0004
@@ -1737,8 +1731,8 @@ setup(int argc, char* argv[])
   /* Options: */
 
   score = 0;
-  use_sound = TRUE;
-  fullscreen = FALSE;
+  use_sound = true;
+  fullscreen = false;
 
   /* Check command-line options: */
 
@@ -1746,11 +1740,11 @@ setup(int argc, char* argv[])
     {
       if (strcmp(argv[i], "--fullscreen") == 0 || strcmp(argv[i], "-f") == 0)
         {
-          fullscreen = TRUE;
+          fullscreen = true;
         }
       else if (strcmp(argv[i], "--nosound") == 0 || strcmp(argv[i], "-q") == 0)
         {
-          use_sound = FALSE;
+          use_sound = false;
         }
       else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
         {
@@ -2010,7 +2004,7 @@ setup(int argc, char* argv[])
                   "The Simple DirectMedia error that occured was:\n"
                   "%s\n\n",
                   SDL_GetError());
-          use_sound = FALSE;
+          use_sound = false;
         }
     }
 
@@ -2265,10 +2259,10 @@ clip(int* x1, int* y1, int* x2, int* y2)
   fx2 = (double)*x2;
   fy2 = (double)*y2;
 
-  done = FALSE;
-  draw = FALSE;
+  done = false;
+  draw = false;
   m = 0;
-  swapped = FALSE;
+  swapped = false;
 
   while (!done)
     {
@@ -2277,18 +2271,18 @@ clip(int* x1, int* y1, int* x2, int* y2)
 
       if (!(code1 | code2))
         {
-          done = TRUE;
-          draw = TRUE;
+          done = true;
+          draw = true;
         }
       else if (code1 & code2)
         {
-          done = TRUE;
+          done = true;
         }
       else
         {
           if (!code1)
             {
-              swapped = TRUE;
+              swapped = true;
               tmp = fx1;
               fx1 = fx2;
               fx2 = tmp;
@@ -2360,9 +2354,9 @@ clip(int* x1, int* y1, int* x2, int* y2)
 #else
 
   if (*x1 < 0 || *x1 >= WIDTH || *y1 < 0 || *y1 >= HEIGHT || *x2 < 0 || *x2 >= WIDTH || *y2 < 0 || *y2 >= HEIGHT)
-    return FALSE;
+    return false;
   else
-    return TRUE;
+    return true;
 
 #endif
 }
