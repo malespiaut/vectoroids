@@ -473,7 +473,7 @@ int clip(int* x1, int* y1, int* x2, int* y2);
 color_type mkcolor(int r, int g, int b);
 void sdl_drawline(int x1, int y1, color_type c1,
                   int x2, int y2, color_type c2);
-unsigned char encode(float x, float y);
+unsigned char encode(double x, double y);
 void drawvertline(int x, int y1, color_type c1,
                   int y2, color_type c2);
 void putpixel(SDL_Surface* surface, int x, int y, Uint32 pixel);
@@ -2186,9 +2186,9 @@ sdl_drawline(int x1, int y1, color_type c1,
 {
   int dx = 0, dy = 0;
 #ifndef EMBEDDED
-  float cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
+  double cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
 #endif
-  float m = NAN, b = NAN;
+  double m = NAN, b = NAN;
 
   if (clip(&x1, &y1, &x2, &y2))
     {
@@ -2197,7 +2197,7 @@ sdl_drawline(int x1, int y1, color_type c1,
 
       if (dx != 0)
         {
-          m = ((float)dy) / ((float)dx);
+          m = ((double)dy) / ((double)dx);
           b = y1 - m * x1;
 
           if (x2 >= x1)
@@ -2214,9 +2214,9 @@ sdl_drawline(int x1, int y1, color_type c1,
           cg = c1.g;
           cb = c1.b;
 
-          rd = (float)(c2.r - c1.r) / (float)(x2 - x1) * dx;
-          gd = (float)(c2.g - c1.g) / (float)(x2 - x1) * dx;
-          bd = (float)(c2.b - c1.b) / (float)(x2 - x1) * dx;
+          rd = (double)(c2.r - c1.r) / (double)(x2 - x1) * dx;
+          gd = (double)(c2.g - c1.g) / (double)(x2 - x1) * dx;
+          bd = (double)(c2.b - c1.b) / (double)(x2 - x1) * dx;
 #endif
 
           while (x1 != x2)
@@ -2255,15 +2255,15 @@ clip(int* x1, int* y1, int* x2, int* y2)
 {
 #ifndef EMBEDDED
 
-  float fx1 = NAN, fx2 = NAN, fy1 = NAN, fy2 = NAN, tmp = NAN;
-  float m = NAN;
+  double fx1 = NAN, fx2 = NAN, fy1 = NAN, fy2 = NAN, tmp = NAN;
+  double m = NAN;
   unsigned char code1 = 0, code2 = 0;
   int done = 0, draw = 0, swapped = 0;
   unsigned char ctmp = 0;
-  fx1 = (float)*x1;
-  fy1 = (float)*y1;
-  fx2 = (float)*x2;
-  fy2 = (float)*y2;
+  fx1 = (double)*x1;
+  fy1 = (double)*y1;
+  fx2 = (double)*x2;
+  fy2 = (double)*y2;
 
   done = FALSE;
   draw = FALSE;
@@ -2370,7 +2370,7 @@ clip(int* x1, int* y1, int* x2, int* y2)
 /* Where does this line clip? */
 
 unsigned char
-encode(float x, float y)
+encode(double x, double y)
 {
   unsigned char code = 0;
 
@@ -2380,7 +2380,7 @@ encode(float x, float y)
     {
       code = code | LEFT_EDGE;
     }
-  else if (x >= (float)WIDTH)
+  else if (x >= (double)WIDTH)
     {
       code = code | RIGHT_EDGE;
     }
@@ -2389,7 +2389,7 @@ encode(float x, float y)
     {
       code = code | TOP_EDGE;
     }
-  else if (y >= (float)HEIGHT)
+  else if (y >= (double)HEIGHT)
     {
       code = code | BOTTOM_EDGE;
     }
@@ -2405,7 +2405,7 @@ drawvertline(int x, int y1, color_type c1,
 {
   int tmp = 0, dy = 0;
 #ifndef EMBEDDED
-  float cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
+  double cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
 #else
   int cr, cg, cb;
 #endif
@@ -2438,9 +2438,9 @@ drawvertline(int x, int y1, color_type c1,
 #ifndef EMBEDDED
   if (y1 != y2)
     {
-      rd = (float)(c2.r - c1.r) / (float)(y2 - y1);
-      gd = (float)(c2.g - c1.g) / (float)(y2 - y1);
-      bd = (float)(c2.b - c1.b) / (float)(y2 - y1);
+      rd = (double)(c2.r - c1.r) / (double)(y2 - y1);
+      gd = (double)(c2.g - c1.g) / (double)(y2 - y1);
+      bd = (double)(c2.b - c1.b) / (double)(y2 - y1);
     }
   else
     {
