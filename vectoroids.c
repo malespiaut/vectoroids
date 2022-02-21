@@ -23,6 +23,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -181,7 +182,8 @@ int use_sound, use_joystick, fullscreen, text_zoom;
 char zoom_str[24];
 int x, y, xm, ym, angle;
 int player_alive, player_die_timer;
-int lives, score, high, level, game_pending;
+size_t lives = 0, score = 0, high = 0, level = 0;
+bool game_pending = false;
 
 /* Trig junk:  (thanks to Atari BASIC for this) */
 
@@ -504,15 +506,9 @@ main(int argc, char* argv[])
 {
   int done = 0;
   FILE* fi = NULL;
-  char statefile[256], buf[256];
+  char statefile[256] = {0}, buf[256] = {0};
 
   setup(argc, argv);
-
-  /* Set defaults: */
-
-  score = 0;
-  high = 0;
-  game_pending = 0;
 
   /* Load state from disk: */
 
@@ -725,7 +721,7 @@ title(void)
                 {
                   /* Start! */
 
-                  game_pending = 0;
+                  game_pending = false;
                   done = 1;
                 }
               else if (event.button.x >= (WIDTH - 80) / 2 && event.button.x <= (WIDTH + 80) / 2 && event.button.y >= 200 && event.button.y <= 215 && game_pending)
@@ -817,19 +813,19 @@ title(void)
           draw_centered_text("NEW BREED SOFTWARE", 155, 5,
                              mkcolor(96, 96, 96));
 
-          sprintf(str, "HIGH %.6d", high);
+          sprintf(str, "HIGH %.6ld", high);
           draw_text(str, (WIDTH - 110) / 2, 5, 5, mkcolor(128, 255, 255));
           draw_text(str, (WIDTH - 110) / 2 + 1, 6, 5, mkcolor(128, 255, 255));
 
           if (score != 0 && (score != high || (counter % 20) < 10))
             {
-              if (game_pending == 0)
+              if (!game_pending)
                 {
-                  sprintf(str, "LAST %.6d", score);
+                  sprintf(str, "LAST %.6ld", score);
                 }
               else
                 {
-                  sprintf(str, "SCR  %.6d", score);
+                  sprintf(str, "SCR  %.6ld", score);
                 }
               draw_text(str, (WIDTH - 110) / 2, 25, 5, mkcolor(128, 128, 255));
               draw_text(str, (WIDTH - 110) / 2 + 1, 26, 5, mkcolor(128, 128, 255));
@@ -920,7 +916,7 @@ game(void)
   up_pressed = 0;
   shift_pressed = 0;
 
-  if (game_pending == 0)
+  if (!game_pending)
     {
       lives = 3;
       score = 0;
@@ -937,7 +933,7 @@ game(void)
       reset_level();
     }
 
-  game_pending = 1;
+  game_pending = true;
 
   /* Hide mouse cursor: */
 
@@ -1216,7 +1212,7 @@ game(void)
               else
                 {
                   done = 1;
-                  game_pending = 0;
+                  game_pending = false;
                 }
             }
         }
@@ -1564,11 +1560,11 @@ game(void)
         /* Draw score: */
 
 #ifndef EMBEDDED
-      sprintf(str, "%.6d", score);
+      sprintf(str, "%.6ld", score);
       draw_text(str, 3, 3, 14, mkcolor(255, 255, 255));
       draw_text(str, 4, 4, 14, mkcolor(255, 255, 255));
 #else
-      sprintf(str, "%.6d", score);
+      sprintf(str, "%.6ld", score);
       draw_text(str, 3, 3, 10, mkcolor(255, 255, 255));
       draw_text(str, 4, 4, 10, mkcolor(255, 255, 255));
 #endif
@@ -1576,7 +1572,7 @@ game(void)
       /* Level: */
 
 #ifndef EMBEDDED
-      sprintf(str, "%d", level);
+      sprintf(str, "%ld", level);
       draw_text(str, (WIDTH - 14) / 2, 3, 14, mkcolor(255, 255, 255));
       draw_text(str, (WIDTH - 14) / 2 + 1, 4, 14, mkcolor(255, 255, 255));
 #else
@@ -2867,7 +2863,7 @@ reset_level(void)
 #endif
     }
 
-  sprintf(zoom_str, "LEVEL %d", level);
+  sprintf(zoom_str, "LEVEL %ld", level);
 
   text_zoom = ZOOM_START;
 }
