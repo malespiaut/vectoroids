@@ -24,6 +24,7 @@
 #include <SDL_image.h>
 #include <math.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -467,7 +468,7 @@ int clip(int* x1, int* y1, int* x2, int* y2);
 color_type mkcolor(int r, int g, int b);
 void sdl_drawline(int x1, int y1, color_type c1,
                   int x2, int y2, color_type c2);
-unsigned char encode(double x, double y);
+uint8_t encode(double x, double y);
 void drawvertline(int x, int y1, color_type c1,
                   int y2, color_type c2);
 void putpixel(SDL_Surface* surface, int x, int y, Uint32 pixel);
@@ -2251,9 +2252,9 @@ clip(int* x1, int* y1, int* x2, int* y2)
 
   double fx1 = NAN, fx2 = NAN, fy1 = NAN, fy2 = NAN, tmp = NAN;
   double m = NAN;
-  unsigned char code1 = 0, code2 = 0;
+  uint8_t code1 = 0, code2 = 0;
   int done = 0, draw = 0, swapped = 0;
-  unsigned char ctmp = 0;
+  uint8_t ctmp = 0;
   fx1 = (double)*x1;
   fy1 = (double)*y1;
   fx2 = (double)*x2;
@@ -2363,10 +2364,10 @@ clip(int* x1, int* y1, int* x2, int* y2)
 
 /* Where does this line clip? */
 
-unsigned char
+uint8_t
 encode(double x, double y)
 {
-  unsigned char code = 0;
+  uint8_t code = 0;
 
   code = 0x00;
 
