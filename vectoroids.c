@@ -456,8 +456,8 @@ int32_t char_vectors[36][5][4] = {
 
 /* Local function prototypes: */
 
-int32_t title(void);
-int32_t game(void);
+bool title(void);
+bool game(void);
 void finish(void);
 void setup(int32_t argc, char* argv[]);
 void seticon(void);
@@ -607,10 +607,10 @@ main(int32_t argc, char* argv[])
 
 /* Title screen: */
 
-int32_t
+bool
 title(void)
 {
-  int32_t done = 0, quit = 0;
+  bool done = false, quit = false;
   size_t snapped = 0;
   int32_t angle = 0, size = 0, counter = 0, x = 0, y = 0, xm = 0, ym = 0, z1 = 0, z2 = 0, z3 = 0;
   SDL_Event event = {0};
@@ -635,12 +635,7 @@ title(void)
   xm = (rand() % 4) + 2;
   ym = (rand() % 10) - 5;
 
-  counter = 0;
-  angle = 0;
   size = 40;
-
-  done = 0;
-  quit = 0;
 
   do
     {
@@ -688,8 +683,8 @@ title(void)
         {
           if (event.type == SDL_QUIT)
             {
-              done = 1;
-              quit = 1;
+              done = true;
+              quit = true;
             }
           else if (event.type == SDL_KEYDOWN)
             {
@@ -697,18 +692,18 @@ title(void)
 
               if (key == SDLK_SPACE)
                 {
-                  done = 1;
+                  done = true;
                 }
               else if (key == SDLK_ESCAPE)
                 {
-                  done = 1;
-                  quit = 1;
+                  done = true;
+                  quit = true;
                 }
             }
 #ifdef JOY_YES
           else if (event.type == SDL_JOYBUTTONDOWN)
             {
-              done = 1;
+              done = true;
             }
 #endif
           else if (event.type == SDL_MOUSEBUTTONDOWN)
@@ -718,11 +713,11 @@ title(void)
                   /* Start! */
 
                   game_pending = false;
-                  done = 1;
+                  done = true;
                 }
               else if (event.button.x >= (WIDTH - 80) / 2 && event.button.x <= (WIDTH + 80) / 2 && event.button.y >= 200 && event.button.y <= 215 && game_pending)
                 {
-                  done = 1;
+                  done = true;
                 }
             }
         }
@@ -892,25 +887,17 @@ title(void)
 
 /* --- GAME --- */
 
-int32_t
+bool
 game(void)
 {
-  int32_t done = 0, quit = 0, counter = 0;
+  bool done = false, quit = false;
+  int32_t counter = 0;
   int32_t num_asteroids_alive = 0;
   SDL_Event event = {0};
   SDLKey key = {0};
-  int32_t left_pressed = 0, right_pressed = 0, up_pressed = 0, shift_pressed = 0;
+  bool left_pressed = false, right_pressed = false, up_pressed = false, shift_pressed = false;
   char str[10] = {0};
   uint32_t now_time = 0, last_time = 0;
-
-  done = 0;
-  quit = 0;
-  counter = 0;
-
-  left_pressed = 0;
-  right_pressed = 0;
-  up_pressed = 0;
-  shift_pressed = 0;
 
   if (!game_pending)
     {
@@ -963,8 +950,8 @@ game(void)
             {
               /* Quit! */
 
-              done = 1;
-              quit = 1;
+              done = true;
+              quit = true;
             }
           else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
             {
@@ -976,7 +963,7 @@ game(void)
                     {
                       /* Return to menu! */
 
-                      done = 1;
+                      done = true;
                     }
 
                   /* Key press... */
@@ -985,21 +972,21 @@ game(void)
                     {
                       /* Rotate CW */
 
-                      left_pressed = 0;
-                      right_pressed = 1;
+                      left_pressed = false;
+                      right_pressed = true;
                     }
                   else if (key == SDLK_LEFT)
                     {
                       /* Rotate CCW */
 
-                      left_pressed = 1;
-                      right_pressed = 0;
+                      left_pressed = true;
+                      right_pressed = false;
                     }
                   else if (key == SDLK_UP)
                     {
                       /* Thrust! */
 
-                      up_pressed = 1;
+                      up_pressed = true;
                     }
                   else if ((key == SDLK_SPACE) && player_alive)
                     {
@@ -1012,7 +999,7 @@ game(void)
                     {
                       /* Respawn now (if applicable) */
 
-                      shift_pressed = 1;
+                      shift_pressed = true;
                     }
                 }
               else if (event.type == SDL_KEYUP)
@@ -1021,22 +1008,22 @@ game(void)
 
                   if (key == SDLK_RIGHT)
                     {
-                      right_pressed = 0;
+                      right_pressed = false;
                     }
                   else if (key == SDLK_LEFT)
                     {
-                      left_pressed = 0;
+                      left_pressed = false;
                     }
                   else if (key == SDLK_UP)
                     {
-                      up_pressed = 0;
+                      up_pressed = false;
                     }
 
                   if (key == SDLK_LSHIFT || key == SDLK_RSHIFT)
                     {
                       /* Respawn now (if applicable) */
 
-                      shift_pressed = 0;
+                      shift_pressed = false;
                     }
                 }
             }
@@ -1053,11 +1040,11 @@ game(void)
                 {
                   /* Thrust: */
 
-                  up_pressed = 1;
+                  up_pressed = true;
                 }
               else
                 {
-                  shift_pressed = 1;
+                  shift_pressed = true;
                 }
             }
           else if (event.type == SDL_JOYBUTTONUP)
@@ -1066,11 +1053,11 @@ game(void)
                 {
                   /* Stop thrust: */
 
-                  up_pressed = 0;
+                  up_pressed = false;
                 }
               else if (event.jbutton.button != JOY_B)
                 {
-                  shift_pressed = 0;
+                  shift_pressed = false;
                 }
             }
           else if (event.type == SDL_JOYAXISMOTION)
@@ -1079,18 +1066,18 @@ game(void)
                 {
                   if (event.jaxis.value < -256)
                     {
-                      left_pressed = 1;
-                      right_pressed = 0;
+                      left_pressed = true;
+                      right_pressed = false;
                     }
                   else if (event.jaxis.value > 256)
                     {
-                      left_pressed = 0;
-                      right_pressed = 1;
+                      left_pressed = false;
+                      right_pressed = true;
                     }
                   else
                     {
-                      left_pressed = 0;
-                      right_pressed = 0;
+                      left_pressed = false;
+                      right_pressed = false;
                     }
                 }
             }
@@ -1207,7 +1194,7 @@ game(void)
                 }
               else
                 {
-                  done = 1;
+                  done = true;
                   game_pending = false;
                 }
             }
