@@ -8,7 +8,7 @@ SRC_EXT = c
 # Path to the source directory, relative to the makefile
 SRC_PATH = .
 # Space-separated pkg-config libraries used by this project
-LIBS =
+LIBS = sdl SDL_image SDL_mixer
 # General compiler flags
 COMPILE_FLAGS = -Wall -Wextra -Wpedantic -DDATA_PREFIX=\"data/\" -DJOY_NO -DLINUX 
 # Additional release-specific flags
@@ -16,9 +16,9 @@ RCOMPILE_FLAGS = -D NDEBUG
 # Additional debug-specific flags
 DCOMPILE_FLAGS = -D DEBUG
 # Add additional include paths
-INCLUDES = -I $(SRC_PATH) -I /usr/include/SDL
+INCLUDES = -I $(SRC_PATH)
 # General linker settings
-LINK_FLAGS = -lSDL -lSDL_image -lSDL_mixer
+LINK_FLAGS =
 # Additional release-specific linker settings
 RLINK_FLAGS =
 # Additional debug-specific linker settings
