@@ -1453,7 +1453,7 @@ game(void)
                            x >> 4, y >> 4,
                            angle);
 #else
-              i = (rand() % 128) + 128;
+              int32_t i = (rand() % 128) + 128;
 
               draw_segment(0, 0, mkcolor(255, i, i),
                            (rand() % 20), 180, mkcolor(255, i, i),
