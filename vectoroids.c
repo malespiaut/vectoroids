@@ -501,7 +501,7 @@ int32_t
 main(int32_t argc, char* argv[])
 {
   int32_t done = 0;
-  FILE* fi = NULL;
+  FILE* fi = 0;
   char statefile[256] = {0}, buf[256] = {0};
 
   setup(argc, argv);
@@ -518,7 +518,7 @@ main(int32_t argc, char* argv[])
 #endif
 
   fi = fopen(statefile, "r");
-  if (fi != NULL)
+  if (fi)
     {
       /* Skip comment line: */
 
@@ -572,7 +572,7 @@ main(int32_t argc, char* argv[])
   /* Save state: */
 
   fi = fopen(statefile, "w");
-  if (fi == NULL)
+  if (!fi)
     {
       perror(statefile);
     }
@@ -770,7 +770,7 @@ title(void)
 
       /* (Erase first) */
 
-      SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
+      SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
 
       /* (Title) */
 
@@ -1202,7 +1202,7 @@ game(void)
 
       /* Erase screen: */
 
-      SDL_BlitSurface(bkgd, NULL, screen, NULL);
+      SDL_BlitSurface(bkgd, 0, screen, 0);
 
       /* Move ship: */
 
@@ -1715,7 +1715,7 @@ finish(void)
 void
 setup(int32_t argc, char* argv[])
 {
-  SDL_Surface* tmp = NULL;
+  SDL_Surface* tmp = 0;
 
   /* Check command-line options: */
 
@@ -1844,7 +1844,7 @@ setup(int32_t argc, char* argv[])
 
           js = SDL_JoystickOpen(0);
 
-          if (js == NULL)
+          if (!js)
             {
               fprintf(stderr,
                       "\nWarning: Could not open joystick 1.\n"
@@ -1889,7 +1889,7 @@ setup(int32_t argc, char* argv[])
     {
       screen = set_vid_mode(SDL_FULLSCREEN | SDL_HWSURFACE);
 
-      if (screen == NULL)
+      if (!screen)
         {
           fprintf(stderr,
                   "\nWarning: I could not set up fullscreen video for "
@@ -1905,7 +1905,7 @@ setup(int32_t argc, char* argv[])
     {
       screen = set_vid_mode(0);
 
-      if (screen == NULL)
+      if (!screen)
         {
           fprintf(stderr,
                   "\nError: I could not open the display.\n"
@@ -1921,7 +1921,7 @@ setup(int32_t argc, char* argv[])
 #ifndef EMBEDDED
   tmp = IMG_Load(DATA_PREFIX "images/redspot.jpg");
 
-  if (tmp == NULL)
+  if (!tmp)
     {
       fprintf(stderr,
               "\nError: I could not open the background image:\n" DATA_PREFIX "images/redspot.jpg\n"
@@ -1932,7 +1932,7 @@ setup(int32_t argc, char* argv[])
     }
 
   bkgd = SDL_DisplayFormat(tmp);
-  if (bkgd == NULL)
+  if (!bkgd)
     {
       fprintf(stderr,
               "\nError: I couldn't convert the background image"
@@ -1949,7 +1949,7 @@ setup(int32_t argc, char* argv[])
 
   tmp = SDL_LoadBMP(DATA_PREFIX "images/redspot-e.bmp");
 
-  if (tmp == NULL)
+  if (!tmp)
     {
       fprintf(stderr,
               "\nError: I could not open the background image:\n" DATA_PREFIX "images/redspot-e.bmp\n"
@@ -1960,7 +1960,7 @@ setup(int32_t argc, char* argv[])
     }
 
   bkgd = SDL_DisplayFormat(tmp);
-  if (bkgd == NULL)
+  if (!bkgd)
     {
       fprintf(stderr,
               "\nError: I couldn't convert the background image"
@@ -1998,7 +1998,7 @@ setup(int32_t argc, char* argv[])
       for (size_t i = 0; i < NUM_SOUNDS; i++)
         {
           sounds[i] = Mix_LoadWAV(sound_names[i]);
-          if (sounds[i] == NULL)
+          if (!sounds[i])
             {
               fprintf(stderr,
                       "\nError: I could not load the sound file:\n"
@@ -2011,7 +2011,7 @@ setup(int32_t argc, char* argv[])
         }
 
       game_music = Mix_LoadMUS(mus_game_name);
-      if (game_music == NULL)
+      if (!game_music)
         {
           fprintf(stderr,
                   "\nError: I could not load the music file:\n"
@@ -2035,13 +2035,13 @@ seticon(void)
 {
 #ifndef EMBEDDED
   int32_t masklen = 0;
-  uint8_t* mask = NULL;
-  SDL_Surface* icon = NULL;
+  uint8_t* mask = 0;
+  SDL_Surface* icon = 0;
 
   /* Load icon into a surface: */
 
   icon = IMG_Load(DATA_PREFIX "images/icon.png");
-  if (icon == NULL)
+  if (!icon)
     {
       fprintf(stderr,
               "\nError: I could not load the icon image: %s\n"
@@ -2448,7 +2448,7 @@ void
 putpixel(SDL_Surface* surface, int32_t x, int32_t y, uint32_t pixel)
 {
   int32_t bpp = 0;
-  uint8_t* p = NULL;
+  uint8_t* p = 0;
 
   /* Assuming the X/Y values are within the bounds of this surface... */
 
@@ -2875,7 +2875,7 @@ set_vid_mode(uint32_t flags)
   int32_t depth = 0;
 
   depth = SDL_VideoModeOK(WIDTH, HEIGHT, 16, flags);
-  return depth ? SDL_SetVideoMode(WIDTH, HEIGHT, depth, flags) : NULL;
+  return depth ? SDL_SetVideoMode(WIDTH, HEIGHT, depth, flags) : 0;
 }
 
 /* Draw text, centered horizontally: */
