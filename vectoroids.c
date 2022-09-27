@@ -82,7 +82,7 @@
 
 typedef struct letter_type
 {
-  int32_t x, y;
+  size_t x, y;
   int32_t xm, ym;
 } letter_type;
 
@@ -483,7 +483,7 @@ void add_asteroid(int32_t x, int32_t y, int32_t xm, int32_t ym, int32_t size);
 void add_bit(int32_t x, int32_t y, int32_t xm, int32_t ym);
 void draw_asteroid(int32_t size, int32_t x, int32_t y, int32_t angle, shape_type* shape);
 void playsound(int32_t snd);
-void hurt_asteroid(int32_t j, int32_t xm, int32_t ym, int32_t exp_size);
+void hurt_asteroid(int32_t j, int32_t xm, int32_t ym, size_t exp_size);
 void add_score(int32_t amount);
 void draw_char(char c, int32_t x, int32_t y, int32_t r, color_type cl);
 void draw_text(char* str, int32_t x, int32_t y, int32_t s, color_type c);
@@ -1559,7 +1559,7 @@ game(void)
       draw_text(str, (WIDTH - 14) / 2, 3, 14, mkcolor(255, 255, 255));
       draw_text(str, (WIDTH - 14) / 2 + 1, 4, 14, mkcolor(255, 255, 255));
 #else
-      sprintf(str, "%d", level);
+      sprintf(str, "%ld", level);
       draw_text(str, (WIDTH - 14) / 2, 3, 10, mkcolor(255, 255, 255));
       draw_text(str, (WIDTH - 14) / 2 + 1, 4, 10, mkcolor(255, 255, 255));
 #endif
@@ -1719,7 +1719,7 @@ setup(int32_t argc, char* argv[])
 
   /* Check command-line options: */
 
-  for (size_t i = 1; i < argc; i++)
+  for (size_t i = 1; i < (size_t)argc; i++)
     {
       if (strcmp(argv[i], "--fullscreen") == 0 || strcmp(argv[i], "-f") == 0)
         {
@@ -2385,6 +2385,7 @@ drawvertline(int32_t x, int32_t y1, color_type c1,
   double cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
 #else
   int32_t cr, cg, cb;
+  (void)c2;
 #endif
 
   if (y1 > y2)
@@ -2694,7 +2695,7 @@ playsound(int32_t snd)
 /* Break an asteroid and add an explosion: */
 
 void
-hurt_asteroid(int32_t j, int32_t xm, int32_t ym, int32_t exp_size)
+hurt_asteroid(int32_t j, int32_t xm, int32_t ym, size_t exp_size)
 {
   add_score(100 / (asteroids[j].size + 1));
 
