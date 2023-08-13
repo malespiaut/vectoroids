@@ -497,8 +497,8 @@ void draw_centered_text(char* str, int32_t y, int32_t s, color_type c);
 
 /* --- MAIN --- */
 
-int32_t
-main(int32_t argc, char* argv[])
+int
+main(const int argc, const char* argv[])
 {
   int32_t done = 0;
   FILE* fi = 0;
