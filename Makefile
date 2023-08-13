@@ -10,7 +10,7 @@ SRC_PATH = .
 # Space-separated pkg-config libraries used by this project
 LIBS = sdl12_compat SDL_image SDL_mixer
 # General compiler flags
-COMPILE_FLAGS = -Wall -Wextra -Wpedantic -DDATA_PREFIX=\"data/\" -DJOY_NO -DLINUX 
+COMPILE_FLAGS = -std=c2x -Wall -Wextra -Wpedantic -Wshadow -Wreturn-type -Wint-conversion -Wstrict-aliasing=2 -Wdouble-promotion -DDATA_PREFIX=\"data/\" -DJOY_NO -DLINUX 
 # Additional release-specific flags
 RCOMPILE_FLAGS = -D NDEBUG -Os -g0 -s
 # Additional debug-specific flags
