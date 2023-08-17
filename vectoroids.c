@@ -23,11 +23,7 @@
 #define VER_VERSION "1.2.0"
 #define VER_DATE "2023.08.17"
 
-#ifndef EMBEDDED
 #define STATE_FORMAT_VERSION "2001.12.01"
-#else
-#define STATE_FORMAT_VERSION "2001.12.01e"
-#endif
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -47,40 +43,21 @@
 
 /* Constraints: */
 
-#ifndef EMBEDDED
 #define NUM_BULLETS 2
-#else
-#define NUM_BULLETS 3
-#endif
 
-#ifndef EMBEDDED
 #define NUM_ASTEROIDS 20
 #define NUM_BITS 50
-#else
-#define NUM_ASTEROIDS 15
-#define NUM_BITS 25
-#endif
 
 #define AST_SIDES 6
-#ifndef EMBEDDED
 #define AST_RADIUS 10
 #define SHIP_RADIUS 20
-#else
-#define AST_RADIUS 7
-#define SHIP_RADIUS 12
-#endif
 
 #define ZOOM_START 40
 #define ONEUP_SCORE 10000
-#define FPS 50
+#define FPS 60
 
-#ifndef EMBEDDED
 #define WIDTH 480
 #define HEIGHT 480
-#else
-#define WIDTH 240
-#define HEIGHT 320
-#endif
 
 #define LEFT_EDGE 0x0001
 #define RIGHT_EDGE 0x0002
@@ -1119,11 +1096,7 @@ game(void)
             {
               if (!Mix_Playing(CHAN_THRUST))
                 {
-#ifndef EMBEDDED
                   Mix_PlayChannel(CHAN_THRUST, sounds[SND_THRUST], -1);
-#else
-                  Mix_PlayChannel(-1, sounds[SND_THRUST], 0);
-#endif
                 }
             }
 #endif
@@ -1145,9 +1118,7 @@ game(void)
             {
               if (Mix_Playing(CHAN_THRUST))
                 {
-#ifndef EMBEDDED
                   Mix_HaltChannel(CHAN_THRUST);
-#endif
                 }
             }
 #endif
@@ -1358,9 +1329,7 @@ game(void)
                     {
                       if (Mix_Playing(CHAN_THRUST))
                         {
-#ifndef EMBEDDED
                           Mix_HaltChannel(CHAN_THRUST);
-#endif
                         }
                     }
 #endif
@@ -1450,19 +1419,10 @@ game(void)
 
           if (up_pressed)
             {
-#ifndef EMBEDDED
               draw_segment(0, 0, mkcolor(255, 255, 255),
                            (rand() % 20), 180, mkcolor(255, 0, 0),
                            player_x >> 4, player_y >> 4,
                            player_angle);
-#else
-              int32_t i = (rand() % 128) + 128;
-
-              draw_segment(0, 0, mkcolor(255, i, i),
-                           (rand() % 20), 180, mkcolor(255, i, i),
-                           x >> 4, y >> 4,
-                           player_angle);
-#endif
             }
         }
 
@@ -1543,29 +1503,17 @@ game(void)
             }
         }
 
-        /* Draw score: */
+      /* Draw score: */
 
-#ifndef EMBEDDED
       sprintf(str, "%.6ld", score);
       draw_text(str, 3, 3, 14, mkcolor(255, 255, 255));
       draw_text(str, 4, 4, 14, mkcolor(255, 255, 255));
-#else
-      sprintf(str, "%.6ld", score);
-      draw_text(str, 3, 3, 10, mkcolor(255, 255, 255));
-      draw_text(str, 4, 4, 10, mkcolor(255, 255, 255));
-#endif
 
       /* Level: */
 
-#ifndef EMBEDDED
       sprintf(str, "%ld", level);
       draw_text(str, (WIDTH - 14) / 2, 3, 14, mkcolor(255, 255, 255));
       draw_text(str, (WIDTH - 14) / 2 + 1, 4, 14, mkcolor(255, 255, 255));
-#else
-      sprintf(str, "%ld", level);
-      draw_text(str, (WIDTH - 14) / 2, 3, 10, mkcolor(255, 255, 255));
-      draw_text(str, (WIDTH - 14) / 2 + 1, 4, 10, mkcolor(255, 255, 255));
-#endif
 
       /* Draw lives: */
       size_t k = 0;
@@ -1635,15 +1583,9 @@ game(void)
               text_zoom--;
             }
 
-#ifndef EMBEDDED
           draw_text(zoom_str, (WIDTH - (strlen(zoom_str) * text_zoom)) / 2,
                     (HEIGHT - text_zoom) / 2,
                     text_zoom, mkcolor(text_zoom * (256 / ZOOM_START), 0, 0));
-#else
-          draw_text(zoom_str, (WIDTH - (strlen(zoom_str) * text_zoom)) / 2,
-                    (HEIGHT - text_zoom) / 2,
-                    text_zoom, mkcolor(text_zoom * (256 / ZOOM_START), 128, 128));
-#endif
         }
 
       /* Game over? */
@@ -1906,9 +1848,8 @@ setup(const int argc, const char* argv[])
       exit(EXIT_FAILURE);
     }
 
-    /* Load background image: */
+  /* Load background image: */
 
-#ifndef EMBEDDED
   g_texture = IMG_LoadTexture(g_renderer, DATA_PREFIX "images/redspot.jpg");
 
   if (!g_texture)
@@ -1920,35 +1861,6 @@ setup(const int argc, const char* argv[])
               SDL_GetError());
       exit(1);
     }
-
-#else
-
-  tmp = SDL_LoadBMP(DATA_PREFIX "images/redspot-e.bmp");
-
-  if (!tmp)
-    {
-      fprintf(stderr,
-              "\nError: I could not open the background image:\n" DATA_PREFIX "images/redspot-e.bmp\n"
-              "The Simple DirectMedia error that occured was:\n"
-              "%s\n\n",
-              SDL_GetError());
-      exit(1);
-    }
-
-  bkgd = SDL_DisplayFormat(tmp);
-  if (!bkgd)
-    {
-      fprintf(stderr,
-              "\nError: I couldn't convert the background image"
-              "to the display format!\n"
-              "The Simple DirectMedia error that occured was:\n"
-              "%s\n\n",
-              SDL_GetError());
-      exit(1);
-    }
-
-  SDL_FreeSurface(tmp);
-#endif
 
   SDL_RenderSetLogicalSize(g_renderer, WIDTH, HEIGHT);
 
@@ -2097,9 +2009,7 @@ sdl_drawline(int32_t x1, int32_t y1, color_type c1,
              int32_t x2, int32_t y2, color_type c2)
 {
   int32_t dx = 0, dy = 0;
-#ifndef EMBEDDED
   double cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
-#endif
   double m = NAN, b = NAN;
 
   if (clip(&x1, &y1, &x2, &y2))
@@ -2121,7 +2031,6 @@ sdl_drawline(int32_t x1, int32_t y1, color_type c1,
               dx = -1;
             }
 
-#ifndef EMBEDDED
           cr = c1.r;
           cg = c1.g;
           cb = c1.b;
@@ -2129,28 +2038,20 @@ sdl_drawline(int32_t x1, int32_t y1, color_type c1,
           rd = (double)(c2.r - c1.r) / (double)(x2 - x1) * dx;
           gd = (double)(c2.g - c1.g) / (double)(x2 - x1) * dx;
           bd = (double)(c2.b - c1.b) / (double)(x2 - x1) * dx;
-#endif
 
           while (x1 != x2)
             {
               y1 = m * x1 + b;
               y2 = m * (x1 + dx) + b;
 
-#ifndef EMBEDDED
               drawvertline(x1, y1, mkcolor(cr, cg, cb),
                            y2, mkcolor(cr + rd, cg + gd, cb + bd));
-#else
-              drawvertline(x1, y1, mkcolor(c1.r, c1.g, c1.b),
-                           y2, mkcolor(c1.r, c1.g, c1.b));
-#endif
 
               x1 = x1 + dx;
 
-#ifndef EMBEDDED
               cr = cr + rd;
               cg = cg + gd;
               cb = cb + bd;
-#endif
             }
         }
       else
@@ -2165,8 +2066,6 @@ sdl_drawline(int32_t x1, int32_t y1, color_type c1,
 int32_t
 clip(int32_t* x1, int32_t* y1, int32_t* x2, int32_t* y2)
 {
-#ifndef EMBEDDED
-
   double fx1 = NAN, fx2 = NAN, fy1 = NAN, fy2 = NAN, tmp = NAN;
   double m = NAN;
   uint8_t code1 = 0, code2 = 0;
@@ -2269,14 +2168,6 @@ clip(int32_t* x1, int32_t* y1, int32_t* x2, int32_t* y2)
   *y2 = (int32_t)fy2;
 
   return (draw);
-#else
-
-  if (*x1 < 0 || *x1 >= WIDTH || *y1 < 0 || *y1 >= HEIGHT || *x2 < 0 || *x2 >= WIDTH || *y2 < 0 || *y2 >= HEIGHT)
-    return false;
-  else
-    return true;
-
-#endif
 }
 
 /* Where does this line clip? */
@@ -2316,12 +2207,7 @@ drawvertline(int32_t x, int32_t y1, color_type c1,
              int32_t y2, color_type c2)
 {
   int32_t tmp = 0, dy = 0;
-#ifndef EMBEDDED
   double cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
-#else
-  int32_t cr, cg, cb;
-  (void)c2;
-#endif
 
   if (y1 > y2)
     {
@@ -2329,7 +2215,6 @@ drawvertline(int32_t x, int32_t y1, color_type c1,
       y1 = y2;
       y2 = tmp;
 
-#ifndef EMBEDDED
       tmp = c1.r;
       c1.r = c2.r;
       c2.r = tmp;
@@ -2341,14 +2226,12 @@ drawvertline(int32_t x, int32_t y1, color_type c1,
       tmp = c1.b;
       c1.b = c2.b;
       c2.b = tmp;
-#endif
     }
 
   cr = c1.r;
   cg = c1.g;
   cb = c1.b;
 
-#ifndef EMBEDDED
   if (y1 != y2)
     {
       rd = (double)(c2.r - c1.r) / (double)(y2 - y1);
@@ -2361,7 +2244,6 @@ drawvertline(int32_t x, int32_t y1, color_type c1,
       gd = 0;
       bd = 0;
     }
-#endif
 
   for (dy = y1; dy <= y2; dy++)
     {
@@ -2369,11 +2251,9 @@ drawvertline(int32_t x, int32_t y1, color_type c1,
 
       putpixel(x, dy, (color_type){.r = (uint8_t)cr, .g = (uint8_t)cg, .b = (uint8_t)cb});
 
-#ifndef EMBEDDED
       cr = cr + rd;
       cg = cg + gd;
       cb = cb + bd;
-#endif
     }
 }
 
@@ -2475,11 +2355,7 @@ add_bullet(int32_t x, int32_t y, int32_t a, int32_t xm, int32_t ym)
 
   if (found != -1)
     {
-#ifndef EMBEDDED
       bullets[found].timer = 50;
-#else
-      bullets[found].timer = 30;
-#endif
 
       bullets[found].x = x;
       bullets[found].y = y;
@@ -2575,11 +2451,7 @@ draw_asteroid(int32_t size, int32_t x, int32_t y, int32_t angle, shape_type* sha
   int32_t b1 = 0, b2 = 0;
   int32_t div = 0;
 
-#ifndef EMBEDDED
   div = 240;
-#else
-  div = 120;
-#endif
 
   for (size_t i = 0; i < AST_SIDES - 1; i++)
     {
@@ -2615,9 +2487,6 @@ playsound(int32_t snd)
 #ifndef NOSOUND
   if (use_sound)
     {
-#ifdef EMBEDDED
-      which = -1;
-#else
       which = (rand() % 3) + CHAN_THRUST;
       for (size_t i = CHAN_THRUST; i < 4; i++)
         {
@@ -2626,7 +2495,6 @@ playsound(int32_t snd)
               which = i;
             }
         }
-#endif
 
       Mix_PlayChannel(which, sounds[snd], 0);
     }
@@ -2767,19 +2635,11 @@ reset_level(void)
 
   for (size_t i = 0; i < (level + 1) && i < 10; i++)
     {
-#ifndef EMBEDDED
       add_asteroid(/* x */ (rand() % 40) + ((WIDTH - 40) * (rand() % 2)),
                    /* y */ (rand() % HEIGHT),
                    /* xm */ (rand() % 9) - 4,
                    /* ym */ ((rand() % 9) - 4) * 4,
                    /* size */ (rand() % 3) + 2);
-#else
-      add_asteroid(/* x */ (rand() % WIDTH),
-                   /* y */ (rand() % 40) + ((HEIGHT - 40) * (rand() % 2)),
-                   /* xm */ ((rand() % 9) - 4) * 4,
-                   /* ym */ (rand() % 9) - 4,
-                   /* size */ (rand() % 3) + 2);
-#endif
     }
 
   sprintf(zoom_str, "LEVEL %ld", level);
