@@ -705,6 +705,8 @@ title(void)
                   done = true;
                   quit = true;
                   break;
+                default:
+                  break;
                 }
             }
 #ifdef JOY_YES
@@ -998,6 +1000,8 @@ game(void)
                       /* Respawn now (if applicable) */
                       shift_pressed = true;
                       break;
+                    default:
+                      break;
                     }
                 }
               else if (event.type == SDL_KEYUP)
@@ -1018,6 +1022,8 @@ game(void)
                     case SDL_SCANCODE_RSHIFT:
                       /* Respawn now (if applicable) */
                       shift_pressed = false;
+                      break;
+                    default:
                       break;
                     }
                 }
