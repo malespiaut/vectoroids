@@ -33,9 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifndef NOSOUND
 #include <SDL_mixer.h>
-#endif
 
 #ifndef DATA_PREFIX
 #define DATA_PREFIX "data/"
@@ -151,10 +149,8 @@ char* mus_game_name = DATA_PREFIX "music/decision.s3m";
 SDL_Window* g_window = 0;
 SDL_Renderer* g_renderer = 0;
 SDL_Texture* g_texture = 0;
-#ifndef NOSOUND
 Mix_Chunk* sounds[NUM_SOUNDS] = {0};
 Mix_Music* game_music = 0;
-#endif
 #ifdef JOY_YES
 SDL_Joystick* js = 0;
 #endif
@@ -913,7 +909,6 @@ game(void)
 
     /* Play music: */
 
-#ifndef NOSOUND
   if (use_sound)
     {
       if (!Mix_PlayingMusic())
@@ -921,7 +916,6 @@ game(void)
           Mix_PlayMusic(game_music, -1);
         }
     }
-#endif
 
   do
     {
@@ -1091,7 +1085,6 @@ game(void)
           player_ym -= (fast_sin(player_angle >> 3) * 3) >> 10;
 
           /* Start thruster sound: */
-#ifndef NOSOUND
           if (use_sound)
             {
               if (!Mix_Playing(CHAN_THRUST))
@@ -1099,7 +1092,6 @@ game(void)
                   Mix_PlayChannel(CHAN_THRUST, sounds[SND_THRUST], -1);
                 }
             }
-#endif
         }
       else
         {
@@ -1113,7 +1105,6 @@ game(void)
 
             /* Stop thruster sound: */
 
-#ifndef NOSOUND
           if (use_sound)
             {
               if (Mix_Playing(CHAN_THRUST))
@@ -1121,7 +1112,6 @@ game(void)
                   Mix_HaltChannel(CHAN_THRUST);
                 }
             }
-#endif
         }
 
       /* Handle player death: */
@@ -1324,7 +1314,6 @@ game(void)
 
                   /* Stop thruster sound: */
 
-#ifndef NOSOUND
                   if (use_sound)
                     {
                       if (Mix_Playing(CHAN_THRUST))
@@ -1332,13 +1321,11 @@ game(void)
                           Mix_HaltChannel(CHAN_THRUST);
                         }
                     }
-#endif
 
                   lives--;
 
                   if (lives == 0)
                     {
-#ifndef NOSOUND
                       if (use_sound)
                         {
                           playsound(SND_GAMEOVER);
@@ -1347,7 +1334,6 @@ game(void)
                           /* Mix_PlayChannel(CHAN_THRUST,
                              sounds[SND_GAMEOVER], 0); */
                         }
-#endif
                       player_die_timer = 100;
                     }
                 }
@@ -1864,7 +1850,6 @@ setup(const int argc, const char* argv[])
 
   SDL_RenderSetLogicalSize(g_renderer, WIDTH, HEIGHT);
 
-#ifndef NOSOUND
   /* Init sound: */
 
   if (use_sound)
@@ -1912,7 +1897,6 @@ setup(const int argc, const char* argv[])
           exit(1);
         }
     }
-#endif
 }
 
 /* Fast approximate-integer, table-based cosine! Whee! */
@@ -2484,7 +2468,6 @@ playsound(int32_t snd)
 {
   int32_t which = 0;
 
-#ifndef NOSOUND
   if (use_sound)
     {
       which = (rand() % 3) + CHAN_THRUST;
@@ -2498,7 +2481,6 @@ playsound(int32_t snd)
 
       Mix_PlayChannel(which, sounds[snd], 0);
     }
-#endif
 }
 
 /* Break an asteroid and add an explosion: */
