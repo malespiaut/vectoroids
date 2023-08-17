@@ -13,17 +13,13 @@ pub fn build(b: *Build) void {
     exe.addCSourceFiles(&.{
         "vectoroids.c",
     }, &.{
-        "-Wall",
-        "-Wextra",
-        "-Wpedantic",
-        "-Wshadow",
-        "-std=c17",
+        "-std=c2x",
     });
 
     exe.linkSystemLibrary("c");
-    exe.linkSystemLibrary("sdl12_compat");
-    exe.linkSystemLibrary("SDL_image");
-    exe.linkSystemLibrary("SDL_mixer");
+    exe.linkSystemLibrary("sdl2");
+    exe.linkSystemLibrary("SDL2_image");
+    exe.linkSystemLibrary("SDL2_mixer");
 
     exe.defineCMacro("DATA_PREFIX", "\"data/\"");
     exe.defineCMacro("JOY_NO", null);
