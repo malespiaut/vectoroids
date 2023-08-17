@@ -171,9 +171,9 @@ char* mus_game_name = DATA_PREFIX "music/decision.s3m";
 
 /* Globals: */
 
-SDL_Window* window = 0;
-SDL_Renderer* renderer = 0;
-SDL_Texture* texture = 0;
+SDL_Window* g_window = 0;
+SDL_Renderer* g_renderer = 0;
+SDL_Texture* g_texture = 0;
 #ifndef NOSOUND
 Mix_Chunk* sounds[NUM_SOUNDS] = {0};
 Mix_Music* game_music = 0;
@@ -187,7 +187,7 @@ bit_type bits[NUM_BITS] = {0};
 bool use_sound = true, use_joystick = false, fullscreen = false;
 int32_t text_zoom = 0;
 char zoom_str[24] = {0};
-int32_t x = 0, y = 0, xm = 0, ym = 0, angle = 0;
+int32_t player_x = 0, player_y = 0, player_xm = 0, player_ym = 0, player_angle = 0;
 int32_t player_alive = 0, player_die_timer = 0;
 size_t lives = 0, score = 0, high = 0, level = 0;
 bool game_pending = false;
@@ -470,7 +470,7 @@ int32_t char_vectors[36][5][4] = {
 bool title(void);
 bool game(void);
 void finish(void);
-void setup(int32_t argc, char* argv[]);
+void setup(const int argc, const char* argv[]);
 int32_t fast_cos(int32_t v);
 int32_t fast_sin(int32_t v);
 void draw_line(int32_t x1, int32_t y1, color_type c1,
@@ -482,7 +482,7 @@ void sdl_drawline(int32_t x1, int32_t y1, color_type c1,
 uint8_t encode(double x, double y);
 void drawvertline(int32_t x, int32_t y1, color_type c1,
                   int32_t y2, color_type c2);
-void putpixel(SDL_Renderer* renderer, int32_t x, int32_t y, color_type color);
+void putpixel(int32_t x, int32_t y, color_type color);
 void draw_segment(int32_t r1, int32_t a1,
                   color_type c1,
                   int32_t r2, int32_t a2,
@@ -501,7 +501,7 @@ void draw_thick_line(int32_t x1, int32_t y1, color_type c1,
                      int32_t x2, int32_t y2, color_type c2);
 void reset_level(void);
 void show_version(void);
-void show_usage(FILE* f, char* prg);
+void show_usage(FILE* f, const char* prg);
 void draw_centered_text(char* str, int32_t y, int32_t s, color_type c);
 
 /* --- MAIN --- */
@@ -552,11 +552,11 @@ main(const int argc, const char* argv[])
           player_die_timer = fgetc(fi);
           fread(&score, sizeof(int), 1, fi);
           fread(&high, sizeof(int), 1, fi);
-          fread(&x, sizeof(int), 1, fi);
-          fread(&y, sizeof(int), 1, fi);
-          fread(&xm, sizeof(int), 1, fi);
-          fread(&ym, sizeof(int), 1, fi);
-          fread(&angle, sizeof(int), 1, fi);
+          fread(&player_x, sizeof(int), 1, fi);
+          fread(&player_y, sizeof(int), 1, fi);
+          fread(&player_xm, sizeof(int), 1, fi);
+          fread(&player_ym, sizeof(int), 1, fi);
+          fread(&player_angle, sizeof(int), 1, fi);
           fread(bullets, sizeof(bullet_type), NUM_BULLETS, fi);
           fread(asteroids, sizeof(asteroid_type), NUM_ASTEROIDS, fi);
           fread(bits, sizeof(bit_type), NUM_BITS, fi);
@@ -597,11 +597,11 @@ main(const int argc, const char* argv[])
       fputc(player_die_timer, fi);
       fwrite(&score, sizeof(int), 1, fi);
       fwrite(&high, sizeof(int), 1, fi);
-      fwrite(&x, sizeof(int), 1, fi);
-      fwrite(&y, sizeof(int), 1, fi);
-      fwrite(&xm, sizeof(int), 1, fi);
-      fwrite(&ym, sizeof(int), 1, fi);
-      fwrite(&angle, sizeof(int), 1, fi);
+      fwrite(&player_x, sizeof(int), 1, fi);
+      fwrite(&player_y, sizeof(int), 1, fi);
+      fwrite(&player_xm, sizeof(int), 1, fi);
+      fwrite(&player_ym, sizeof(int), 1, fi);
+      fwrite(&player_angle, sizeof(int), 1, fi);
       fwrite(bullets, sizeof(bullet_type), NUM_BULLETS, fi);
       fwrite(asteroids, sizeof(asteroid_type), NUM_ASTEROIDS, fi);
       fwrite(bits, sizeof(bit_type), NUM_BITS, fi);
@@ -779,8 +779,8 @@ title(void)
 
       /* (Erase first) */
 
-      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-      SDL_RenderClear(renderer);
+      SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+      SDL_RenderClear(g_renderer);
 
       /* (Title) */
 
@@ -881,7 +881,7 @@ title(void)
 
       /* Flush and pause! */
 
-      SDL_RenderPresent(renderer);
+      SDL_RenderPresent(g_renderer);
 
       now_time = SDL_GetTicks();
 
@@ -915,11 +915,11 @@ game(void)
 
       player_alive = 1;
       player_die_timer = 0;
-      angle = 90;
-      x = (WIDTH / 2) << 4;
-      y = (HEIGHT / 2) << 4;
-      xm = 0;
-      ym = 0;
+      player_angle = 90;
+      player_x = (WIDTH / 2) << 4;
+      player_y = (HEIGHT / 2) << 4;
+      player_xm = 0;
+      player_ym = 0;
 
       level = 1;
       reset_level();
@@ -992,7 +992,7 @@ game(void)
                       if (player_alive)
                         {
                           /* Fire a bullet! */
-                          add_bullet(x >> 4, y >> 4, angle, xm, ym);
+                          add_bullet(player_x >> 4, player_y >> 4, player_angle, player_xm, player_ym);
                         }
                       break;
                     case SDL_SCANCODE_LSHIFT:
@@ -1035,7 +1035,7 @@ game(void)
                 {
                   /* Fire a bullet! */
 
-                  add_bullet(x >> 4, y >> 4, angle, xm, ym);
+                  add_bullet(x >> 4, y >> 4, angle, player_xm, player_ym);
                 }
               else if (event.jbutton.button == JOY_A)
                 {
@@ -1089,18 +1089,18 @@ game(void)
 
       if (right_pressed)
         {
-          angle = angle - 8;
-          if (angle < 0)
+          player_angle -= 8;
+          if (player_angle < 0)
             {
-              angle = angle + 360;
+              player_angle += 360;
             }
         }
       else if (left_pressed)
         {
-          angle = angle + 8;
-          if (angle >= 360)
+          player_angle += 8;
+          if (player_angle >= 360)
             {
-              angle = angle - 360;
+              player_angle -= 360;
             }
         }
 
@@ -1110,8 +1110,8 @@ game(void)
         {
           /* Move forward: */
 
-          xm = xm + ((fast_cos(angle >> 3) * 3) >> 10);
-          ym = ym - ((fast_sin(angle >> 3) * 3) >> 10);
+          player_xm += (fast_cos(player_angle >> 3) * 3) >> 10;
+          player_ym -= (fast_sin(player_angle >> 3) * 3) >> 10;
 
           /* Start thruster sound: */
 #ifndef NOSOUND
@@ -1134,8 +1134,8 @@ game(void)
 
           if ((counter % 20) == 0)
             {
-              xm = (xm * 7) / 8;
-              ym = (ym * 7) / 8;
+              player_xm = (player_xm * 7) / 8;
+              player_ym = (player_ym * 7) / 8;
             }
 
             /* Stop thruster sound: */
@@ -1166,11 +1166,11 @@ game(void)
                   /* Reset player: */
 
                   player_die_timer = 0;
-                  angle = 90;
-                  x = (WIDTH / 2) << 4;
-                  y = (HEIGHT / 2) << 4;
-                  xm = 0;
-                  ym = 0;
+                  player_angle = 90;
+                  player_x = (WIDTH / 2) << 4;
+                  player_y = (HEIGHT / 2) << 4;
+                  player_xm = 0;
+                  player_ym = 0;
 
                   /* Only bring player back when it's alright to! */
 
@@ -1182,7 +1182,7 @@ game(void)
                         {
                           if (asteroids[i].alive)
                             {
-                              if (asteroids[i].x >= (x >> 4) - (WIDTH / 5) && asteroids[i].x <= (x >> 4) + (WIDTH / 5) && asteroids[i].y >= (y >> 4) - (HEIGHT / 5) && asteroids[i].y <= (y >> 4) + (HEIGHT / 5))
+                              if (asteroids[i].x >= (player_x >> 4) - (WIDTH / 5) && asteroids[i].x <= (player_x >> 4) + (WIDTH / 5) && asteroids[i].y >= (player_y >> 4) - (HEIGHT / 5) && asteroids[i].y <= (player_y >> 4) + (HEIGHT / 5))
                                 {
                                   /* If any asteroid is too close for comfort,
                                      don't bring ship back yet! */
@@ -1203,33 +1203,33 @@ game(void)
 
       /* Erase screen: */
 
-      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-      SDL_RenderClear(renderer);
-      SDL_RenderCopy(renderer, texture, NULL, NULL);
+      SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+      SDL_RenderClear(g_renderer);
+      SDL_RenderCopy(g_renderer, g_texture, NULL, NULL);
 
       /* Move ship: */
 
-      x = x + xm;
-      y = y + ym;
+      player_x += player_xm;
+      player_y += player_ym;
 
       /* Wrap ship around edges of screen: */
 
-      if (x >= (WIDTH << 4))
+      if (player_x >= (WIDTH << 4))
         {
-          x = x - (WIDTH << 4);
+          player_x -= (WIDTH << 4);
         }
-      else if (x < 0)
+      else if (player_x < 0)
         {
-          x = x + (WIDTH << 4);
+          player_x += (WIDTH << 4);
         }
 
-      if (y >= (HEIGHT << 4))
+      if (player_y >= (HEIGHT << 4))
         {
-          y = y - (HEIGHT << 4);
+          player_y -= (HEIGHT << 4);
         }
-      else if (y < 0)
+      else if (player_y < 0)
         {
-          y = y + (HEIGHT << 4);
+          player_y += (HEIGHT << 4);
         }
 
       /* Move bullets: */
@@ -1342,9 +1342,9 @@ game(void)
 
               /* See if we collided with the player: */
 
-              if (asteroids[i].x >= (x >> 4) - SHIP_RADIUS && asteroids[i].x <= (x >> 4) + SHIP_RADIUS && asteroids[i].y >= (y >> 4) - SHIP_RADIUS && asteroids[i].y <= (y >> 4) + SHIP_RADIUS && player_alive)
+              if (asteroids[i].x >= (player_x >> 4) - SHIP_RADIUS && asteroids[i].x <= (player_x >> 4) + SHIP_RADIUS && asteroids[i].y >= (player_y >> 4) - SHIP_RADIUS && asteroids[i].y <= (player_y >> 4) + SHIP_RADIUS && player_alive)
                 {
-                  hurt_asteroid(i, xm >> 4, ym >> 4, NUM_BITS);
+                  hurt_asteroid(i, player_xm >> 4, player_ym >> 4, NUM_BITS);
 
                   player_alive = 0;
                   player_die_timer = 30;
@@ -1428,23 +1428,23 @@ game(void)
         {
           draw_segment(SHIP_RADIUS, 0, mkcolor(128, 128, 255),
                        SHIP_RADIUS / 2, 135, mkcolor(0, 0, 192),
-                       x >> 4, y >> 4,
-                       angle);
+                       player_x >> 4, player_y >> 4,
+                       player_angle);
 
           draw_segment(SHIP_RADIUS / 2, 135, mkcolor(0, 0, 192),
                        0, 0, mkcolor(64, 64, 230),
-                       x >> 4, y >> 4,
-                       angle);
+                       player_x >> 4, player_y >> 4,
+                       player_angle);
 
           draw_segment(0, 0, mkcolor(64, 64, 230),
                        SHIP_RADIUS / 2, 225, mkcolor(0, 0, 192),
-                       x >> 4, y >> 4,
-                       angle);
+                       player_x >> 4, player_y >> 4,
+                       player_angle);
 
           draw_segment(SHIP_RADIUS / 2, 225, mkcolor(0, 0, 192),
                        SHIP_RADIUS, 0, mkcolor(128, 128, 255),
-                       x >> 4, y >> 4,
-                       angle);
+                       player_x >> 4, player_y >> 4,
+                       player_angle);
 
           /* Draw flame: */
 
@@ -1453,15 +1453,15 @@ game(void)
 #ifndef EMBEDDED
               draw_segment(0, 0, mkcolor(255, 255, 255),
                            (rand() % 20), 180, mkcolor(255, 0, 0),
-                           x >> 4, y >> 4,
-                           angle);
+                           player_x >> 4, player_y >> 4,
+                           player_angle);
 #else
               int32_t i = (rand() % 128) + 128;
 
               draw_segment(0, 0, mkcolor(255, i, i),
                            (rand() % 20), 180, mkcolor(255, i, i),
                            x >> 4, y >> 4,
-                           angle);
+                           player_angle);
 #endif
             }
         }
@@ -1681,7 +1681,7 @@ game(void)
 
       /* Flush and pause! */
 
-      SDL_RenderPresent(renderer);
+      SDL_RenderPresent(g_renderer);
 
       now_time = SDL_GetTicks();
 
@@ -1716,10 +1716,8 @@ finish(void)
 }
 
 void
-setup(int32_t argc, char* argv[])
+setup(const int argc, const char* argv[])
 {
-  SDL_Surface* tmp = 0;
-
   /* Check command-line options: */
 
   for (size_t i = 1; i < (size_t)argc; i++)
@@ -1888,22 +1886,22 @@ setup(int32_t argc, char* argv[])
 
   /* Open window: */
 
-  window = SDL_CreateWindow("Vectoroids", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+  g_window = SDL_CreateWindow("Vectoroids", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
-  if (!window)
+  if (!g_window)
     {
       fprintf(stderr, "Window creation error: %s\n", SDL_GetError());
       SDL_Quit();
       exit(EXIT_FAILURE);
     }
 
-  SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+  SDL_SetWindowFullscreen(g_window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 
-  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-  if (!renderer)
+  g_renderer = SDL_CreateRenderer(g_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+  if (!g_renderer)
     {
       fprintf(stderr, "Renderer creation error; %s\n", SDL_GetError());
-      SDL_DestroyWindow(window);
+      SDL_DestroyWindow(g_window);
       SDL_Quit();
       exit(EXIT_FAILURE);
     }
@@ -1911,9 +1909,9 @@ setup(int32_t argc, char* argv[])
     /* Load background image: */
 
 #ifndef EMBEDDED
-  texture = IMG_LoadTexture(renderer, DATA_PREFIX "images/redspot.jpg");
+  g_texture = IMG_LoadTexture(g_renderer, DATA_PREFIX "images/redspot.jpg");
 
-  if (!texture)
+  if (!g_texture)
     {
       fprintf(stderr,
               "\nError: I could not open the background image:\n" DATA_PREFIX "images/redspot.jpg\n"
@@ -1952,7 +1950,7 @@ setup(int32_t argc, char* argv[])
   SDL_FreeSurface(tmp);
 #endif
 
-  SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
+  SDL_RenderSetLogicalSize(g_renderer, WIDTH, HEIGHT);
 
 #ifndef NOSOUND
   /* Init sound: */
@@ -2367,9 +2365,9 @@ drawvertline(int32_t x, int32_t y1, color_type c1,
 
   for (dy = y1; dy <= y2; dy++)
     {
-      putpixel(renderer, x + 1, dy + 1, (color_type){.r = 0, .g = 0, .b = 0});
+      putpixel(x + 1, dy + 1, (color_type){.r = 0, .g = 0, .b = 0});
 
-      putpixel(renderer, x, dy, (color_type){.r = (uint8_t)cr, .g = (uint8_t)cg, .b = (uint8_t)cb});
+      putpixel(x, dy, (color_type){.r = (uint8_t)cr, .g = (uint8_t)cg, .b = (uint8_t)cb});
 
 #ifndef EMBEDDED
       cr = cr + rd;
@@ -2382,17 +2380,19 @@ drawvertline(int32_t x, int32_t y1, color_type c1,
 /* Draw a single pixel into the surface: */
 
 void
-putpixel(SDL_Renderer* renderer, int32_t x, int32_t y, color_type color)
+putpixel(int32_t x, int32_t y, color_type color)
 {
+#if 0
   int32_t bpp = 0;
   uint8_t* p = 0;
+#endif
 
   /* Assuming the X/Y values are within the bounds of this surface... */
 
   if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT)
     {
-      SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
-      SDL_RenderDrawPoint(renderer, x, y);
+      SDL_SetRenderDrawColor(g_renderer, color.r, color.g, color.b, 255);
+      SDL_RenderDrawPoint(g_renderer, x, y);
 #if 0
       /* Determine bytes-per-pixel for the surface in question: */
 
@@ -2798,7 +2798,7 @@ show_version(void)
 /* Show usage display: */
 
 void
-show_usage(FILE* f, char* prg)
+show_usage(FILE* f, const char* prg)
 {
   fprintf(f, "Usage: %s {--help | --usage | --version | --copying }\n"
              "       %s [--fullscreen] [--nosound]\n\n",
