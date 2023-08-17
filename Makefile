@@ -8,13 +8,13 @@ SRC_EXT = c
 # Path to the source directory, relative to the makefile
 SRC_PATH = .
 # Space-separated pkg-config libraries used by this project
-LIBS = sdl12_compat SDL_image SDL_mixer
+LIBS = sdl2 SDL2_image SDL2_mixer
 # General compiler flags
-COMPILE_FLAGS = -std=c2x -Wall -Wextra -Wpedantic -Wshadow -Wreturn-type -Wint-conversion -Wstrict-aliasing=2 -Wdouble-promotion -DDATA_PREFIX=\"data/\" -DJOY_NO -DLINUX 
+COMPILE_FLAGS = -std=c2x -Wall -Wextra -Wpedantic -Wshadow -Wreturn-type -Wint-conversion -Wstrict-aliasing=2 -Wdouble-promotion -DDATA_PREFIX=\"data/\" -DJOY_NO -DLINUX
 # Additional release-specific flags
 RCOMPILE_FLAGS = -D NDEBUG -Os -g0 -s
 # Additional debug-specific flags
-DCOMPILE_FLAGS = -D DEBUG -O0 -ggdb3
+DCOMPILE_FLAGS = -D DEBUG -O0 -gdwarf-5
 # Add additional include paths
 INCLUDES = -I $(SRC_PATH)
 # General linker settings

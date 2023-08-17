@@ -9,10 +9,19 @@
   http://www.newbreedsoftware.com/vectoroids/
 
   November 30, 2001 - April 20, 2002
+
+  > -------------------------------------------- <
+
+  SDL2 port by Marc-Alexandre Espiaut, for Logicoq
+  malespiaut.dev@posteo.eu
+  http://logicoq.free.fr
+
+  August 17, 2023
+
 */
 
-#define VER_VERSION "1.1.0"
-#define VER_DATE "2002.04.20"
+#define VER_VERSION "1.2.0"
+#define VER_DATE "2023.08.17"
 
 #ifndef EMBEDDED
 #define STATE_FORMAT_VERSION "2001.12.01"
@@ -162,7 +171,9 @@ char* mus_game_name = DATA_PREFIX "music/decision.s3m";
 
 /* Globals: */
 
-SDL_Surface *screen = 0, *bkgd = 0;
+SDL_Window* window = 0;
+SDL_Renderer* renderer = 0;
+SDL_Texture* texture = 0;
 #ifndef NOSOUND
 Mix_Chunk* sounds[NUM_SOUNDS] = {0};
 Mix_Music* game_music = 0;
@@ -460,7 +471,6 @@ bool title(void);
 bool game(void);
 void finish(void);
 void setup(int32_t argc, char* argv[]);
-void seticon(void);
 int32_t fast_cos(int32_t v);
 int32_t fast_sin(int32_t v);
 void draw_line(int32_t x1, int32_t y1, color_type c1,
@@ -472,7 +482,7 @@ void sdl_drawline(int32_t x1, int32_t y1, color_type c1,
 uint8_t encode(double x, double y);
 void drawvertline(int32_t x, int32_t y1, color_type c1,
                   int32_t y2, color_type c2);
-void putpixel(SDL_Surface* surface, int32_t x, int32_t y, uint32_t pixel);
+void putpixel(SDL_Renderer* renderer, int32_t x, int32_t y, color_type color);
 void draw_segment(int32_t r1, int32_t a1,
                   color_type c1,
                   int32_t r2, int32_t a2,
@@ -492,7 +502,6 @@ void draw_thick_line(int32_t x1, int32_t y1, color_type c1,
 void reset_level(void);
 void show_version(void);
 void show_usage(FILE* f, char* prg);
-SDL_Surface* set_vid_mode(uint32_t flags);
 void draw_centered_text(char* str, int32_t y, int32_t s, color_type c);
 
 /* --- MAIN --- */
@@ -614,7 +623,6 @@ title(void)
   size_t snapped = 0;
   int32_t angle = 0, size = 0, counter = 0, x = 0, y = 0, xm = 0, ym = 0, z1 = 0, z2 = 0, z3 = 0;
   SDL_Event event = {0};
-  SDLKey key = {0};
   uint32_t now_time = 0, last_time = 0;
   char* titlestr = "VECTOROIDS";
   char str[20] = {0};
@@ -688,16 +696,15 @@ title(void)
             }
           else if (event.type == SDL_KEYDOWN)
             {
-              key = event.key.keysym.sym;
-
-              if (key == SDLK_SPACE)
+              switch (event.key.keysym.scancode)
                 {
+                case SDL_SCANCODE_SPACE:
                   done = true;
-                }
-              else if (key == SDLK_ESCAPE)
-                {
+                  break;
+                case SDL_SCANCODE_ESCAPE:
                   done = true;
                   quit = true;
+                  break;
                 }
             }
 #ifdef JOY_YES
@@ -770,7 +777,8 @@ title(void)
 
       /* (Erase first) */
 
-      SDL_FillRect(screen, 0, SDL_MapRGB(screen->format, 0, 0, 0));
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+      SDL_RenderClear(renderer);
 
       /* (Title) */
 
@@ -871,7 +879,7 @@ title(void)
 
       /* Flush and pause! */
 
-      SDL_Flip(screen);
+      SDL_RenderPresent(renderer);
 
       now_time = SDL_GetTicks();
 
@@ -894,7 +902,6 @@ game(void)
   int32_t counter = 0;
   int32_t num_asteroids_alive = 0;
   SDL_Event event = {0};
-  SDLKey key = {0};
   bool left_pressed = false, right_pressed = false, up_pressed = false, shift_pressed = false;
   char str[10] = {0};
   uint32_t now_time = 0, last_time = 0;
@@ -955,75 +962,63 @@ game(void)
             }
           else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
             {
-              key = event.key.keysym.sym;
-
               if (event.type == SDL_KEYDOWN)
                 {
-                  if (key == SDLK_ESCAPE)
+                  switch (event.key.keysym.scancode)
                     {
+                    case SDL_SCANCODE_ESCAPE:
                       /* Return to menu! */
-
                       done = true;
-                    }
+                      break;
 
-                  /* Key press... */
-
-                  if (key == SDLK_RIGHT)
-                    {
+                      /* Key press... */
+                    case SDL_SCANCODE_RIGHT:
                       /* Rotate CW */
-
                       left_pressed = false;
                       right_pressed = true;
-                    }
-                  else if (key == SDLK_LEFT)
-                    {
+                      break;
+                    case SDL_SCANCODE_LEFT:
                       /* Rotate CCW */
-
                       left_pressed = true;
                       right_pressed = false;
-                    }
-                  else if (key == SDLK_UP)
-                    {
+                      break;
+                    case SDL_SCANCODE_UP:
                       /* Thrust! */
-
                       up_pressed = true;
-                    }
-                  else if ((key == SDLK_SPACE) && player_alive)
-                    {
-                      /* Fire a bullet! */
-
-                      add_bullet(x >> 4, y >> 4, angle, xm, ym);
-                    }
-
-                  if (key == SDLK_LSHIFT || key == SDLK_RSHIFT)
-                    {
+                      break;
+                    case SDL_SCANCODE_SPACE:
+                      if (player_alive)
+                        {
+                          /* Fire a bullet! */
+                          add_bullet(x >> 4, y >> 4, angle, xm, ym);
+                        }
+                      break;
+                    case SDL_SCANCODE_LSHIFT:
+                    case SDL_SCANCODE_RSHIFT:
                       /* Respawn now (if applicable) */
-
                       shift_pressed = true;
+                      break;
                     }
                 }
               else if (event.type == SDL_KEYUP)
                 {
                   /* Key release... */
-
-                  if (key == SDLK_RIGHT)
+                  switch (event.key.keysym.scancode)
                     {
+                    case SDL_SCANCODE_RIGHT:
                       right_pressed = false;
-                    }
-                  else if (key == SDLK_LEFT)
-                    {
+                      break;
+                    case SDL_SCANCODE_LEFT:
                       left_pressed = false;
-                    }
-                  else if (key == SDLK_UP)
-                    {
+                      break;
+                    case SDL_SCANCODE_UP:
                       up_pressed = false;
-                    }
-
-                  if (key == SDLK_LSHIFT || key == SDLK_RSHIFT)
-                    {
+                      break;
+                    case SDL_SCANCODE_LSHIFT:
+                    case SDL_SCANCODE_RSHIFT:
                       /* Respawn now (if applicable) */
-
                       shift_pressed = false;
+                      break;
                     }
                 }
             }
@@ -1202,7 +1197,9 @@ game(void)
 
       /* Erase screen: */
 
-      SDL_BlitSurface(bkgd, 0, screen, 0);
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+      SDL_RenderClear(renderer);
+      SDL_RenderCopy(renderer, texture, NULL, NULL);
 
       /* Move ship: */
 
@@ -1678,7 +1675,7 @@ game(void)
 
       /* Flush and pause! */
 
-      SDL_Flip(screen);
+      SDL_RenderPresent(renderer);
 
       now_time = SDL_GetTicks();
 
@@ -1885,43 +1882,32 @@ setup(int32_t argc, char* argv[])
 
   /* Open window: */
 
-  if (fullscreen)
-    {
-      screen = set_vid_mode(SDL_FULLSCREEN | SDL_HWSURFACE);
+  window = SDL_CreateWindow("Vectoroids", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
-      if (!screen)
-        {
-          fprintf(stderr,
-                  "\nWarning: I could not set up fullscreen video for "
-                  "%dx%d mode.\n"
-                  "The Simple DirectMedia error that occured was:\n"
-                  "%s\n\n",
-                  WIDTH, HEIGHT, SDL_GetError());
-          fullscreen = false;
-        }
+  if (!window)
+    {
+      fprintf(stderr, "Window creation error: %s\n", SDL_GetError());
+      SDL_Quit();
+      exit(EXIT_FAILURE);
     }
 
-  if (!fullscreen)
-    {
-      screen = set_vid_mode(0);
+  SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 
-      if (!screen)
-        {
-          fprintf(stderr,
-                  "\nError: I could not open the display.\n"
-                  "The Simple DirectMedia error that occured was:\n"
-                  "%s\n\n",
-                  SDL_GetError());
-          exit(1);
-        }
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+  if (!renderer)
+    {
+      fprintf(stderr, "Renderer creation error; %s\n", SDL_GetError());
+      SDL_DestroyWindow(window);
+      SDL_Quit();
+      exit(EXIT_FAILURE);
     }
 
     /* Load background image: */
 
 #ifndef EMBEDDED
-  tmp = IMG_Load(DATA_PREFIX "images/redspot.jpg");
+  texture = IMG_LoadTexture(renderer, DATA_PREFIX "images/redspot.jpg");
 
-  if (!tmp)
+  if (!texture)
     {
       fprintf(stderr,
               "\nError: I could not open the background image:\n" DATA_PREFIX "images/redspot.jpg\n"
@@ -1930,20 +1916,6 @@ setup(int32_t argc, char* argv[])
               SDL_GetError());
       exit(1);
     }
-
-  bkgd = SDL_DisplayFormat(tmp);
-  if (!bkgd)
-    {
-      fprintf(stderr,
-              "\nError: I couldn't convert the background image"
-              "to the display format!\n"
-              "The Simple DirectMedia error that occured was:\n"
-              "%s\n\n",
-              SDL_GetError());
-      exit(1);
-    }
-
-  SDL_FreeSurface(tmp);
 
 #else
 
@@ -1973,6 +1945,8 @@ setup(int32_t argc, char* argv[])
 
   SDL_FreeSurface(tmp);
 #endif
+
+  SDL_RenderSetLogicalSize(renderer, WIDTH, HEIGHT);
 
 #ifndef NOSOUND
   /* Init sound: */
@@ -2022,49 +1996,6 @@ setup(int32_t argc, char* argv[])
           exit(1);
         }
     }
-#endif
-
-  seticon();
-  SDL_WM_SetCaption("Vectoroids", "Vectoroids");
-}
-
-/* Set the window's icon: */
-
-void
-seticon(void)
-{
-#ifndef EMBEDDED
-  int32_t masklen = 0;
-  uint8_t* mask = 0;
-  SDL_Surface* icon = 0;
-
-  /* Load icon into a surface: */
-
-  icon = IMG_Load(DATA_PREFIX "images/icon.png");
-  if (!icon)
-    {
-      fprintf(stderr,
-              "\nError: I could not load the icon image: %s\n"
-              "The Simple DirectMedia error that occured was:\n"
-              "%s\n\n",
-              DATA_PREFIX "images/icon.png", SDL_GetError());
-      exit(1);
-    }
-
-  /* Create mask: */
-
-  masklen = (((icon->w) + 7) / 8) * (icon->h);
-  mask = malloc(masklen * sizeof(uint8_t));
-  memset(mask, 0xFF, masklen);
-
-  /* Set icon: */
-
-  SDL_WM_SetIcon(icon, mask);
-
-  /* Free icon surface & mask: */
-
-  free(mask);
-  SDL_FreeSurface(icon);
 #endif
 }
 
@@ -2430,9 +2361,9 @@ drawvertline(int32_t x, int32_t y1, color_type c1,
 
   for (dy = y1; dy <= y2; dy++)
     {
-      putpixel(screen, x + 1, dy + 1, SDL_MapRGB(screen->format, 0, 0, 0));
+      putpixel(renderer, x + 1, dy + 1, (color_type){.r = 0, .g = 0, .b = 0});
 
-      putpixel(screen, x, dy, SDL_MapRGB(screen->format, (uint8_t)cr, (uint8_t)cg, (uint8_t)cb));
+      putpixel(renderer, x, dy, (color_type){.r = (uint8_t)cr, .g = (uint8_t)cg, .b = (uint8_t)cb});
 
 #ifndef EMBEDDED
       cr = cr + rd;
@@ -2445,7 +2376,7 @@ drawvertline(int32_t x, int32_t y1, color_type c1,
 /* Draw a single pixel into the surface: */
 
 void
-putpixel(SDL_Surface* surface, int32_t x, int32_t y, uint32_t pixel)
+putpixel(SDL_Renderer* renderer, int32_t x, int32_t y, color_type color)
 {
   int32_t bpp = 0;
   uint8_t* p = 0;
@@ -2454,6 +2385,9 @@ putpixel(SDL_Surface* surface, int32_t x, int32_t y, uint32_t pixel)
 
   if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT)
     {
+      SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
+      SDL_RenderDrawPoint(renderer, x, y);
+#if 0
       /* Determine bytes-per-pixel for the surface in question: */
 
       bpp = surface->format->BytesPerPixel;
@@ -2495,6 +2429,7 @@ putpixel(SDL_Surface* surface, int32_t x, int32_t y, uint32_t pixel)
         {
           *(uint32_t*)p = pixel;
         }
+#endif
     }
 }
 
@@ -2862,20 +2797,6 @@ show_usage(FILE* f, char* prg)
   fprintf(f, "Usage: %s {--help | --usage | --version | --copying }\n"
              "       %s [--fullscreen] [--nosound]\n\n",
           prg, prg);
-}
-
-/* Set video mode: */
-/* Contributed to "Defendguin" by Mattias Engdegard <f91-men@nada.kth.se> */
-
-SDL_Surface*
-set_vid_mode(uint32_t flags)
-{
-  /* Prefer 16bpp, but also prefer native modes to emulated 16bpp. */
-
-  int32_t depth = 0;
-
-  depth = SDL_VideoModeOK(WIDTH, HEIGHT, 16, flags);
-  return depth ? SDL_SetVideoMode(WIDTH, HEIGHT, depth, flags) : 0;
 }
 
 /* Draw text, centered horizontally: */
