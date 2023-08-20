@@ -496,7 +496,6 @@ main(const int argc, const char* argv[])
   if (!fi)
   {
     perror("fopen");
-    exit(EXIT_FAILURE);
   }
   else
   {
@@ -570,7 +569,6 @@ main(const int argc, const char* argv[])
   if (!fi)
   {
     perror("fopen");
-    exit(EXIT_FAILURE);
   }
   else
   {
@@ -610,17 +608,12 @@ main(const int argc, const char* argv[])
 bool
 title(void)
 {
-  bool done = false, quit = false;
-  size_t snapped = 0;
-  int32_t angle = 0, size = 0, counter = 0, x = 0, y = 0, xm = 0, ym = 0, z1 = 0, z2 = 0, z3 = 0;
-  SDL_Event event = {0};
-  uint32_t now_time = 0, last_time = 0;
-  char* titlestr = "VECTOROIDS";
-  char str[20] = {0};
-  letter_type letters[11] = {0};
+  bool quit = false;
+  const char* titlestr = "VECTOROIDS";
 
   /* Reset letters: */
 
+  letter_type letters[11] = {0};
   for (size_t i = 0; i < strlen(titlestr); i++)
   {
     letters[i].x = (rand() % WIDTH);
@@ -629,18 +622,18 @@ title(void)
     letters[i].ym = 0;
   }
 
-  x = (rand() % WIDTH);
-  y = (rand() % HEIGHT);
-  xm = (rand() % 4) + 2;
-  ym = (rand() % 10) - 5;
+  int32_t x = (rand() % WIDTH);
+  int32_t y = (rand() % HEIGHT);
+  int32_t xm = (rand() % 4) + 2;
+  int32_t ym = (rand() % 10) - 5;
 
-  size = 40;
+  int32_t size = 40;
 
-  do
+  bool done = false;
+  int32_t angle = 0;
+  for (size_t counter = 0; !done; ++counter)
   {
-    last_time = SDL_GetTicks();
-
-    counter++;
+    Uint64 last_time = SDL_GetTicks64();
 
     /* Rotate rock: */
 
@@ -648,36 +641,37 @@ title(void)
 
     /* Make rock grow: */
 
-    if ((counter % 3) == 0)
+    if (!(counter % 3))
     {
       if (size > 1)
       {
-        size--;
+        --size;
       }
     }
 
     /* Move rock: */
 
-    x = x + xm;
+    x += xm;
 
     if (x >= WIDTH)
     {
-      x = x - WIDTH;
+      x -= WIDTH;
     }
 
-    y = y + ym;
+    y += ym;
 
     if (y >= HEIGHT)
     {
-      y = y - HEIGHT;
+      y -= HEIGHT;
     }
     else if (y < 0)
     {
-      y = y + HEIGHT;
+      y += HEIGHT;
     }
 
     /* Handle events: */
 
+    SDL_Event event = {0};
     while (SDL_PollEvent(&event) > 0)
     {
       if (event.type == SDL_QUIT)
@@ -724,9 +718,10 @@ title(void)
 
     /* Move title characters: */
 
+    size_t snapped = 0;
     if (snapped < strlen(titlestr))
     {
-      for (size_t i = 0; i < strlen(titlestr); i++)
+      for (size_t i = 0; i < strlen(titlestr); ++i)
       {
         letters[i].x = letters[i].x + letters[i].xm;
         letters[i].y = letters[i].y + letters[i].ym;
@@ -761,7 +756,7 @@ title(void)
           letters[i].y = 100;
           letters[i].ym = 0;
 
-          snapped++;
+          ++snapped;
         }
       }
     }
@@ -770,8 +765,16 @@ title(void)
 
     /* (Erase first) */
 
-    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
-    SDL_RenderClear(g_renderer);
+    if (SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255))
+    {
+      fprintf(stderr, "SDL_SetRenderDrawControl: %s\n", SDL_GetError());
+      exit(EXIT_FAILURE);
+    }
+    if (SDL_RenderClear(g_renderer))
+    {
+      fprintf(stderr, "SDL_RenderClear: %s\n", SDL_GetError());
+      exit(EXIT_FAILURE);
+    }
 
     /* (Title) */
 
@@ -786,9 +789,9 @@ title(void)
     {
       for (size_t i = 0; i < strlen(titlestr); i++)
       {
-        z1 = (i + counter) % 255;
-        z2 = ((i + counter + 128) * 2) % 255;
-        z3 = ((i + counter) * 5) % 255;
+        int32_t z1 = (i + counter) % 255;
+        int32_t z2 = ((i + counter + 128) * 2) % 255;
+        int32_t z3 = ((i + counter) * 5) % 255;
 
         draw_char(titlestr[i], letters[i].x, letters[i].y, 10, mkcolor(z1, z2, z3));
       }
@@ -801,11 +804,13 @@ title(void)
       draw_centered_text("BY BILL KENDRICK", 140, 5, mkcolor(128, 128, 128));
       draw_centered_text("NEW BREED SOFTWARE", 155, 5, mkcolor(96, 96, 96));
 
+      char str[20] = {0};
+
       sprintf(str, "HIGH %.6ld", high);
       draw_text(str, (WIDTH - 110) / 2, 5, 5, mkcolor(128, 255, 255));
       draw_text(str, (WIDTH - 110) / 2 + 1, 6, 5, mkcolor(128, 255, 255));
 
-      if (score != 0 && (score != high || (counter % 20) < 10))
+      if (score && (score != high || (counter % 20) < 10))
       {
         if (!game_pending)
         {
@@ -846,15 +851,15 @@ title(void)
 
     SDL_RenderPresent(g_renderer);
 
-    now_time = SDL_GetTicks();
+    Uint64 now_time = SDL_GetTicks64();
 
     if (now_time < last_time + (1000 / FPS))
     {
       SDL_Delay(last_time + 1000 / FPS - now_time);
     }
-  } while (!done);
+  }
 
-  return (quit);
+  return quit;
 }
 
 /* --- GAME --- */
