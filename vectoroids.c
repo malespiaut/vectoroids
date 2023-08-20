@@ -486,31 +486,42 @@ user_file_path_get(const char* file_name)
 int
 main(const int argc, const char* argv[])
 {
-  int32_t done = 0;
-  FILE* fi = 0;
-  char buf[256] = {0};
-
   setup(argc, argv);
 
   /* Load state from disk: */
 
   const char* statefile = user_file_path_get("vectoroids-state");
 
-  fi = fopen(statefile, "r");
-  if (fi)
+  FILE* fi = fopen(statefile, "r");
+  if (!fi)
   {
+    perror("fopen");
+    exit(EXIT_FAILURE);
+  }
+  else
+  {
+    char buf[256] = {0};
+
     /* Skip comment line: */
 
-    fgets(buf, sizeof(buf), fi);
+    if (!fgets(buf, sizeof(buf), fi))
+    {
+      fprintf(stderr, "fgets: Error\n");
+      exit(EXIT_FAILURE);
+    }
 
     /* Grab statefile version: */
 
-    fgets(buf, sizeof(buf), fi);
+    if (!fgets(buf, sizeof(buf), fi))
+    {
+      fprintf(stderr, "fgets: Error\n");
+      exit(EXIT_FAILURE);
+    }
     buf[strlen(buf) - 1] = '\0';
 
-    if (strcmp(buf, VER_DATE) != 0)
+    if (strncmp(buf, VER_DATE, 10))
     {
-      fprintf(stderr, "%s state file format has been updated.\n"
+      fprintf(stderr, "strncmp: %s state file format has been updated.\n"
                       "Old game state is unreadable.  Sorry!\n",
               GAME_NAME);
     }
@@ -533,12 +544,17 @@ main(const int argc, const char* argv[])
       fread(bits, sizeof(bit_type), NUM_BITS, fi);
     }
 
-    fclose(fi);
+    if (fclose(fi))
+    {
+      perror("fclose");
+      exit(EXIT_FAILURE);
+    }
   }
 
   /* Main app loop! */
 
-  do
+  bool done = false;
+  while (!done)
   {
     done = title();
 
@@ -546,14 +562,15 @@ main(const int argc, const char* argv[])
     {
       done = game();
     }
-  } while (!done);
+  }
 
   /* Save state: */
 
   fi = fopen(statefile, "w");
   if (!fi)
   {
-    perror(statefile);
+    perror("fopen");
+    exit(EXIT_FAILURE);
   }
   else
   {
@@ -576,12 +593,16 @@ main(const int argc, const char* argv[])
     fwrite(asteroids, sizeof(asteroid_type), NUM_ASTEROIDS, fi);
     fwrite(bits, sizeof(bit_type), NUM_BITS, fi);
 
-    fclose(fi);
+    if (fclose(fi))
+    {
+      perror("fclose");
+      exit(EXIT_FAILURE);
+    }
   }
 
   finish();
 
-  return (0);
+  return EXIT_SUCCESS;
 }
 
 /* Title screen: */
