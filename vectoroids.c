@@ -2422,11 +2422,9 @@ draw_asteroid(int32_t size, int32_t x, int32_t y, int32_t angle, Shape* shape)
 void
 playsound(int32_t snd)
 {
-  int32_t which = 0;
-
-  if (use_sound)
+  if (use_sound && snd < NUM_SOUNDS)
   {
-    which = (rand() % 3) + CHAN_THRUST;
+    int32_t which = (rand() % 3) + CHAN_THRUST;
     for (size_t i = CHAN_THRUST; i < 4; i++)
     {
       if (!Mix_Playing(i))
