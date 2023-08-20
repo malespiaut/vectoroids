@@ -8,7 +8,7 @@ http://www.newbreedsoftware.com/vectoroids/
 
 November 30, 2001 - April 20, 2002
 
-Version 1.1.0
+Version 1.2.0
 
 ## About
 
@@ -244,6 +244,10 @@ http://www.newbreedsoftware.com/agendaroids/
 SDL Port by Bill Kendrick  
 November 30, 2001 - December 1, 2001  
 http://www.newbreedsoftware.com/vectoroids/
+
+SDL2 port by Marc-Alexandre Espiaut <malespiaut.dev@posteo.eu>, for Logicoq  
+August 17, 2023  
+http://logicoq.free.fr
 
 ### Graphics
 
