@@ -23,8 +23,6 @@
 #define VER_VERSION "1.2.0"
 #define VER_DATE "2023.08.17"
 
-#define STATE_FORMAT_VERSION "2001.12.01"
-
 #include <SDL.h>
 #include <SDL_image.h>
 #include <math.h>
@@ -517,7 +515,7 @@ main(const int argc, const char* argv[])
       fgets(buf, sizeof(buf), fi);
       buf[strlen(buf) - 1] = '\0';
 
-      if (strcmp(buf, STATE_FORMAT_VERSION) != 0)
+      if (strcmp(buf, VER_DATE) != 0)
         {
           fprintf(stderr, "Vectoroids state file format has been updated.\n"
                           "Old game state is unreadable.  Sorry!\n");
@@ -567,7 +565,7 @@ main(const int argc, const char* argv[])
   else
     {
       fprintf(fi, "Vectoroids State File\n");
-      fprintf(fi, "%s\n", STATE_FORMAT_VERSION);
+      fprintf(fi, "%s\n", VER_DATE);
 
       fputc(game_pending, fi);
       fputc(lives, fi);
@@ -1693,7 +1691,7 @@ setup(const int argc, const char* argv[])
       else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0)
         {
           show_version();
-          printf("State format file version " STATE_FORMAT_VERSION "\n");
+          printf("State format file version " VER_DATE "\n");
           exit(0);
         }
       else if (strcmp(argv[i], "--copying") == 0 || strcmp(argv[i], "-c") == 0)
