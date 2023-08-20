@@ -63,47 +63,53 @@
 
 /* Types: */
 
-typedef struct letter_type
+typedef struct Letter Letter;
+struct Letter
 {
   size_t x, y;
   int32_t xm, ym;
-} letter_type;
+};
 
-typedef struct bullet_type
+typedef struct Bullet Bullet;
+struct Bullet
 {
   int32_t timer;
-  int32_t x, y;
-  int32_t xm, ym;
-} bullet_type;
+  int32_t x;
+  int32_t y;
+  int32_t xm;
+  int32_t ym;
+};
 
-typedef struct shape_type
+typedef struct Shape Shape;
+struct Shape
 {
   int32_t radius;
   int32_t angle;
-} shape_type;
+};
 
-typedef struct asteroid_type
+typedef struct Asteroid Asteroid;
+struct Asteroid
 {
-  int32_t alive, size;
-  int32_t x, y;
-  int32_t xm, ym;
-  int32_t angle, angle_m;
-  shape_type shape[kAsteroidsSides];
-} asteroid_type;
+  int32_t alive;
+  int32_t size;
+  int32_t x;
+  int32_t y;
+  int32_t xm;
+  int32_t ym;
+  int32_t angle;
+  int32_t angle_m;
+  Shape shape[kAsteroidsSides];
+};
 
-typedef struct bit_type
+typedef struct Bit Bit;
+struct Bit
 {
   int32_t timer;
-  int32_t x, y;
-  int32_t xm, ym;
-} bit_type;
-
-typedef struct color_type
-{
-  uint8_t r;
-  uint8_t g;
-  uint8_t b;
-} color_type;
+  int32_t x;
+  int32_t y;
+  int32_t xm;
+  int32_t ym;
+};
 
 /* Data: */
 
@@ -153,9 +159,9 @@ Mix_Music* game_music = 0;
 #ifdef JOY_YES
 SDL_Joystick* js = 0;
 #endif
-bullet_type bullets[kNumBullets] = {0};
-asteroid_type asteroids[kNumAsteroids] = {0};
-bit_type bits[kNumBits] = {0};
+Bullet bullets[kNumBullets] = {0};
+Asteroid asteroids[kNumAsteroids] = {0};
+Bit bits[kNumBits] = {0};
 bool use_sound = true, use_joystick = false, fullscreen = false;
 int32_t text_zoom = 0;
 char zoom_str[24] = {0};
@@ -445,28 +451,28 @@ void finish(void);
 void setup(const int argc, const char* argv[]);
 int32_t fast_cos(int32_t v);
 int32_t fast_sin(int32_t v);
-void draw_line(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2);
+void draw_line(int32_t x1, int32_t y1, SDL_Color c1, int32_t x2, int32_t y2, SDL_Color c2);
 int32_t clip(int32_t* x1, int32_t* y1, int32_t* x2, int32_t* y2);
-color_type mkcolor(int32_t r, int32_t g, int32_t b);
-void sdl_drawline(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2);
+SDL_Color mkcolor(int32_t r, int32_t g, int32_t b);
+void sdl_drawline(int32_t x1, int32_t y1, SDL_Color c1, int32_t x2, int32_t y2, SDL_Color c2);
 uint8_t encode(double x, double y);
-void drawvertline(int32_t x, int32_t y1, color_type c1, int32_t y2, color_type c2);
-void putpixel(int32_t x, int32_t y, color_type color);
-void draw_segment(int32_t r1, int32_t a1, color_type c1, int32_t r2, int32_t a2, color_type c2, int32_t cx, int32_t cy, int32_t ang);
+void drawvertline(int32_t x, int32_t y1, SDL_Color c1, int32_t y2, SDL_Color c2);
+void putpixel(int32_t x, int32_t y, SDL_Color color);
+void draw_segment(int32_t r1, int32_t a1, SDL_Color c1, int32_t r2, int32_t a2, SDL_Color c2, int32_t cx, int32_t cy, int32_t ang);
 void add_bullet(int32_t x, int32_t y, int32_t a, int32_t xm, int32_t ym);
 void add_asteroid(int32_t x, int32_t y, int32_t xm, int32_t ym, int32_t size);
 void add_bit(int32_t x, int32_t y, int32_t xm, int32_t ym);
-void draw_asteroid(int32_t size, int32_t x, int32_t y, int32_t angle, shape_type* shape);
+void draw_asteroid(int32_t size, int32_t x, int32_t y, int32_t angle, Shape* shape);
 void playsound(int32_t snd);
 void hurt_asteroid(int32_t j, int32_t xm, int32_t ym, size_t exp_size);
 void add_score(int32_t amount);
-void draw_char(char c, int32_t x, int32_t y, int32_t r, color_type cl);
-void draw_text(char* str, int32_t x, int32_t y, int32_t s, color_type c);
-void draw_thick_line(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2);
+void draw_char(char c, int32_t x, int32_t y, int32_t r, SDL_Color cl);
+void draw_text(char* str, int32_t x, int32_t y, int32_t s, SDL_Color c);
+void draw_thick_line(int32_t x1, int32_t y1, SDL_Color c1, int32_t x2, int32_t y2, SDL_Color c2);
 void reset_level(void);
 void show_version(void);
 void show_usage(FILE* f, const char* prg);
-void draw_centered_text(char* str, int32_t y, int32_t s, color_type c);
+void draw_centered_text(char* str, int32_t y, int32_t s, SDL_Color c);
 const char* user_file_path_get(const char* file_name);
 
 /* File manipulation */
@@ -538,9 +544,9 @@ main(const int argc, const char* argv[])
       fread(&player_xm, sizeof(int), 1, fi);
       fread(&player_ym, sizeof(int), 1, fi);
       fread(&player_angle, sizeof(int), 1, fi);
-      fread(bullets, sizeof(bullet_type), kNumBullets, fi);
-      fread(asteroids, sizeof(asteroid_type), kNumAsteroids, fi);
-      fread(bits, sizeof(bit_type), kNumBits, fi);
+      fread(bullets, sizeof(Bullet), kNumBullets, fi);
+      fread(asteroids, sizeof(Asteroid), kNumAsteroids, fi);
+      fread(bits, sizeof(Bit), kNumBits, fi);
     }
 
     if (fclose(fi))
@@ -587,9 +593,9 @@ main(const int argc, const char* argv[])
     fwrite(&player_xm, sizeof(int), 1, fi);
     fwrite(&player_ym, sizeof(int), 1, fi);
     fwrite(&player_angle, sizeof(int), 1, fi);
-    fwrite(bullets, sizeof(bullet_type), kNumBullets, fi);
-    fwrite(asteroids, sizeof(asteroid_type), kNumAsteroids, fi);
-    fwrite(bits, sizeof(bit_type), kNumBits, fi);
+    fwrite(bullets, sizeof(Bullet), kNumBullets, fi);
+    fwrite(asteroids, sizeof(Asteroid), kNumAsteroids, fi);
+    fwrite(bits, sizeof(Bit), kNumBits, fi);
 
     if (fclose(fi))
     {
@@ -613,7 +619,7 @@ title(void)
 
   /* Reset letters: */
 
-  letter_type letters[11] = {0};
+  Letter letters[11] = {0};
   for (size_t i = 0; i < strlen(titlestr); i++)
   {
     letters[i].x = (rand() % kScreenWidth);
@@ -1887,7 +1893,7 @@ fast_sin(int32_t angle)
 /* Draw a line: */
 
 void
-draw_line(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2)
+draw_line(int32_t x1, int32_t y1, SDL_Color c1, int32_t x2, int32_t y2, SDL_Color c2)
 {
   sdl_drawline(x1, y1, c1, x2, y2, c2);
 
@@ -1910,12 +1916,12 @@ draw_line(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_t
   }
 }
 
-/* Create a color_type struct out of RGB values: */
+/* Create a SDL_Color struct out of RGB values: */
 
-color_type
+SDL_Color
 mkcolor(int32_t r, int32_t g, int32_t b)
 {
-  color_type c;
+  SDL_Color c;
 
   if (r > 255)
   {
@@ -1940,7 +1946,7 @@ mkcolor(int32_t r, int32_t g, int32_t b)
 /* Draw a line on an SDL surface: */
 
 void
-sdl_drawline(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2)
+sdl_drawline(int32_t x1, int32_t y1, SDL_Color c1, int32_t x2, int32_t y2, SDL_Color c2)
 {
   int32_t dx = 0, dy = 0;
   double cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
@@ -2136,7 +2142,7 @@ encode(double x, double y)
 /* Draw a verticle line: */
 
 void
-drawvertline(int32_t x, int32_t y1, color_type c1, int32_t y2, color_type c2)
+drawvertline(int32_t x, int32_t y1, SDL_Color c1, int32_t y2, SDL_Color c2)
 {
   int32_t tmp = 0, dy = 0;
   double cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
@@ -2179,9 +2185,9 @@ drawvertline(int32_t x, int32_t y1, color_type c1, int32_t y2, color_type c2)
 
   for (dy = y1; dy <= y2; dy++)
   {
-    putpixel(x + 1, dy + 1, (color_type){.r = 0, .g = 0, .b = 0});
+    putpixel(x + 1, dy + 1, (SDL_Color){.r = 0, .g = 0, .b = 0});
 
-    putpixel(x, dy, (color_type){.r = (uint8_t)cr, .g = (uint8_t)cg, .b = (uint8_t)cb});
+    putpixel(x, dy, (SDL_Color){.r = (uint8_t)cr, .g = (uint8_t)cg, .b = (uint8_t)cb});
 
     cr = cr + rd;
     cg = cg + gd;
@@ -2192,7 +2198,7 @@ drawvertline(int32_t x, int32_t y1, color_type c1, int32_t y2, color_type c2)
 /* Draw a single pixel into the surface: */
 
 void
-putpixel(int32_t x, int32_t y, color_type color)
+putpixel(int32_t x, int32_t y, SDL_Color color)
 {
 #if 0
   int32_t bpp = 0;
@@ -2254,7 +2260,7 @@ putpixel(int32_t x, int32_t y, color_type color)
 /* Draw a line segment, rotated around a center point: */
 
 void
-draw_segment(int32_t r1, int32_t a1, color_type c1, int32_t r2, int32_t a2, color_type c2, int32_t cx, int32_t cy, int32_t a)
+draw_segment(int32_t r1, int32_t a1, SDL_Color c1, int32_t r2, int32_t a2, SDL_Color c2, int32_t cx, int32_t cy, int32_t a)
 {
   draw_line(((fast_cos((a1 + a) >> 3) * r1) >> 10) + cx,
             cy - ((fast_sin((a1 + a) >> 3) * r1) >> 10),
@@ -2374,7 +2380,7 @@ add_bit(int32_t x, int32_t y, int32_t xm, int32_t ym)
 /* Draw an asteroid: */
 
 void
-draw_asteroid(int32_t size, int32_t x, int32_t y, int32_t angle, shape_type* shape)
+draw_asteroid(int32_t size, int32_t x, int32_t y, int32_t angle, Shape* shape)
 {
   int32_t b1 = 0, b2 = 0;
   int32_t div = 0;
@@ -2497,7 +2503,7 @@ add_score(int32_t amount)
 /* Draw a character: */
 
 void
-draw_char(char c, int32_t x, int32_t y, int32_t r, color_type cl)
+draw_char(char c, int32_t x, int32_t y, int32_t r, SDL_Color cl)
 {
   int32_t v = 0;
 
@@ -2531,7 +2537,7 @@ draw_char(char c, int32_t x, int32_t y, int32_t r, color_type cl)
 }
 
 void
-draw_text(char* str, int32_t x, int32_t y, int32_t s, color_type c)
+draw_text(char* str, int32_t x, int32_t y, int32_t s, SDL_Color c)
 {
   for (size_t i = 0; i < strlen(str); i++)
   {
@@ -2540,7 +2546,7 @@ draw_text(char* str, int32_t x, int32_t y, int32_t s, color_type c)
 }
 
 void
-draw_thick_line(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2)
+draw_thick_line(int32_t x1, int32_t y1, SDL_Color c1, int32_t x2, int32_t y2, SDL_Color c2)
 {
   draw_line(x1, y1, c1, x2, y2, c2);
   draw_line(x1 + 1, y1 + 1, c1, x2 + 1, y2 + 1, c2);
@@ -2600,7 +2606,7 @@ show_usage(FILE* f, const char* prg)
 /* Draw text, centered horizontally: */
 
 void
-draw_centered_text(char* str, int32_t y, int32_t s, color_type c)
+draw_centered_text(char* str, int32_t y, int32_t s, SDL_Color c)
 {
   draw_text(str, (kScreenWidth - strlen(str) * (s + 3)) / 2, y, s, c);
 }
