@@ -20,6 +20,7 @@
 
 */
 
+#define GAME_NAME "Vectoroids"
 #define VER_VERSION "1.2.0"
 #define VER_DATE "2023.08.17"
 
@@ -480,7 +481,7 @@ const char*
 user_file_path_get(const char* file_name)
 {
   static char path[1024] = {0};
-  const char* user_dir = SDL_GetPrefPath("Logicoq", "Vectoroids");
+  const char* user_dir = SDL_GetPrefPath("Logicoq", GAME_NAME);
 
   SDL_snprintf(path, sizeof(path), "%s%s", user_dir, file_name);
   return path;
@@ -517,8 +518,8 @@ main(const int argc, const char* argv[])
 
       if (strcmp(buf, VER_DATE) != 0)
         {
-          fprintf(stderr, "Vectoroids state file format has been updated.\n"
-                          "Old game state is unreadable.  Sorry!\n");
+          fprintf(stderr, "%s state file format has been updated.\n"
+                          "Old game state is unreadable.  Sorry!\n", GAME_NAME);
         }
       else
         {
@@ -564,7 +565,7 @@ main(const int argc, const char* argv[])
     }
   else
     {
-      fprintf(fi, "Vectoroids State File\n");
+      fprintf(fi, "%s State File\n", GAME_NAME);
       fprintf(fi, "%s\n", VER_DATE);
 
       fputc(game_pending, fi);
@@ -1818,7 +1819,7 @@ setup(const int argc, const char* argv[])
 
   /* Open window: */
 
-  g_window = SDL_CreateWindow("Vectoroids", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+  g_window = SDL_CreateWindow(GAME_NAME " v" VER_VERSION, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
   if (!g_window)
     {
@@ -2638,7 +2639,7 @@ reset_level(void)
 void
 show_version(void)
 {
-  printf("Vectoroids - Version " VER_VERSION " (" VER_DATE ")\n");
+  printf("%s - v%s (%s)\n", GAME_NAME, VER_VERSION, VER_DATE);
 }
 
 /* Show usage display: */
