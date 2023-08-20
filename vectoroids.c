@@ -445,21 +445,14 @@ void finish(void);
 void setup(const int argc, const char* argv[]);
 int32_t fast_cos(int32_t v);
 int32_t fast_sin(int32_t v);
-void draw_line(int32_t x1, int32_t y1, color_type c1,
-               int32_t x2, int32_t y2, color_type c2);
+void draw_line(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2);
 int32_t clip(int32_t* x1, int32_t* y1, int32_t* x2, int32_t* y2);
 color_type mkcolor(int32_t r, int32_t g, int32_t b);
-void sdl_drawline(int32_t x1, int32_t y1, color_type c1,
-                  int32_t x2, int32_t y2, color_type c2);
+void sdl_drawline(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2);
 uint8_t encode(double x, double y);
-void drawvertline(int32_t x, int32_t y1, color_type c1,
-                  int32_t y2, color_type c2);
+void drawvertline(int32_t x, int32_t y1, color_type c1, int32_t y2, color_type c2);
 void putpixel(int32_t x, int32_t y, color_type color);
-void draw_segment(int32_t r1, int32_t a1,
-                  color_type c1,
-                  int32_t r2, int32_t a2,
-                  color_type c2,
-                  int32_t cx, int32_t cy, int32_t ang);
+void draw_segment(int32_t r1, int32_t a1, color_type c1, int32_t r2, int32_t a2, color_type c2, int32_t cx, int32_t cy, int32_t ang);
 void add_bullet(int32_t x, int32_t y, int32_t a, int32_t xm, int32_t ym);
 void add_asteroid(int32_t x, int32_t y, int32_t xm, int32_t ym, int32_t size);
 void add_bit(int32_t x, int32_t y, int32_t xm, int32_t ym);
@@ -469,8 +462,7 @@ void hurt_asteroid(int32_t j, int32_t xm, int32_t ym, size_t exp_size);
 void add_score(int32_t amount);
 void draw_char(char c, int32_t x, int32_t y, int32_t r, color_type cl);
 void draw_text(char* str, int32_t x, int32_t y, int32_t s, color_type c);
-void draw_thick_line(int32_t x1, int32_t y1, color_type c1,
-                     int32_t x2, int32_t y2, color_type c2);
+void draw_thick_line(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2);
 void reset_level(void);
 void show_version(void);
 void show_usage(FILE* f, const char* prg);
@@ -506,87 +498,86 @@ main(const int argc, const char* argv[])
 
   fi = fopen(statefile, "r");
   if (fi)
+  {
+    /* Skip comment line: */
+
+    fgets(buf, sizeof(buf), fi);
+
+    /* Grab statefile version: */
+
+    fgets(buf, sizeof(buf), fi);
+    buf[strlen(buf) - 1] = '\0';
+
+    if (strcmp(buf, VER_DATE) != 0)
     {
-      /* Skip comment line: */
-
-      fgets(buf, sizeof(buf), fi);
-
-      /* Grab statefile version: */
-
-      fgets(buf, sizeof(buf), fi);
-      buf[strlen(buf) - 1] = '\0';
-
-      if (strcmp(buf, VER_DATE) != 0)
-        {
-          fprintf(stderr, "%s state file format has been updated.\n"
-                          "Old game state is unreadable.  Sorry!\n",
-                  GAME_NAME);
-        }
-      else
-        {
-          game_pending = fgetc(fi);
-          lives = fgetc(fi);
-          level = fgetc(fi);
-          player_alive = fgetc(fi);
-          player_die_timer = fgetc(fi);
-          fread(&score, sizeof(int), 1, fi);
-          fread(&high, sizeof(int), 1, fi);
-          fread(&player_x, sizeof(int), 1, fi);
-          fread(&player_y, sizeof(int), 1, fi);
-          fread(&player_xm, sizeof(int), 1, fi);
-          fread(&player_ym, sizeof(int), 1, fi);
-          fread(&player_angle, sizeof(int), 1, fi);
-          fread(bullets, sizeof(bullet_type), NUM_BULLETS, fi);
-          fread(asteroids, sizeof(asteroid_type), NUM_ASTEROIDS, fi);
-          fread(bits, sizeof(bit_type), NUM_BITS, fi);
-        }
-
-      fclose(fi);
+      fprintf(stderr, "%s state file format has been updated.\n"
+                      "Old game state is unreadable.  Sorry!\n",
+              GAME_NAME);
     }
+    else
+    {
+      game_pending = fgetc(fi);
+      lives = fgetc(fi);
+      level = fgetc(fi);
+      player_alive = fgetc(fi);
+      player_die_timer = fgetc(fi);
+      fread(&score, sizeof(int), 1, fi);
+      fread(&high, sizeof(int), 1, fi);
+      fread(&player_x, sizeof(int), 1, fi);
+      fread(&player_y, sizeof(int), 1, fi);
+      fread(&player_xm, sizeof(int), 1, fi);
+      fread(&player_ym, sizeof(int), 1, fi);
+      fread(&player_angle, sizeof(int), 1, fi);
+      fread(bullets, sizeof(bullet_type), NUM_BULLETS, fi);
+      fread(asteroids, sizeof(asteroid_type), NUM_ASTEROIDS, fi);
+      fread(bits, sizeof(bit_type), NUM_BITS, fi);
+    }
+
+    fclose(fi);
+  }
 
   /* Main app loop! */
 
   do
-    {
-      done = title();
+  {
+    done = title();
 
-      if (!done)
-        {
-          done = game();
-        }
+    if (!done)
+    {
+      done = game();
     }
-  while (!done);
+  } while (!done);
 
   /* Save state: */
 
   fi = fopen(statefile, "w");
   if (!fi)
-    {
-      perror(statefile);
-    }
+  {
+    perror(statefile);
+  }
   else
-    {
-      fprintf(fi, "%s State File\n", GAME_NAME);
-      fprintf(fi, "%s\n", VER_DATE);
+  {
+    fprintf(fi, "%s State File\n", GAME_NAME);
+    fprintf(fi, "%s\n", VER_DATE);
 
-      fputc(game_pending, fi);
-      fputc(lives, fi);
-      fputc(level, fi);
-      fputc(player_alive, fi);
-      fputc(player_die_timer, fi);
-      fwrite(&score, sizeof(int), 1, fi);
-      fwrite(&high, sizeof(int), 1, fi);
-      fwrite(&player_x, sizeof(int), 1, fi);
-      fwrite(&player_y, sizeof(int), 1, fi);
-      fwrite(&player_xm, sizeof(int), 1, fi);
-      fwrite(&player_ym, sizeof(int), 1, fi);
-      fwrite(&player_angle, sizeof(int), 1, fi);
-      fwrite(bullets, sizeof(bullet_type), NUM_BULLETS, fi);
-      fwrite(asteroids, sizeof(asteroid_type), NUM_ASTEROIDS, fi);
-      fwrite(bits, sizeof(bit_type), NUM_BITS, fi);
+    fputc(game_pending, fi);
+    fputc(lives, fi);
+    fputc(level, fi);
+    fputc(player_alive, fi);
+    fputc(player_die_timer, fi);
+    fwrite(&score, sizeof(int), 1, fi);
+    fwrite(&high, sizeof(int), 1, fi);
+    fwrite(&player_x, sizeof(int), 1, fi);
+    fwrite(&player_y, sizeof(int), 1, fi);
+    fwrite(&player_xm, sizeof(int), 1, fi);
+    fwrite(&player_ym, sizeof(int), 1, fi);
+    fwrite(&player_angle, sizeof(int), 1, fi);
+    fwrite(bullets, sizeof(bullet_type), NUM_BULLETS, fi);
+    fwrite(asteroids, sizeof(asteroid_type), NUM_ASTEROIDS, fi);
+    fwrite(bits, sizeof(bit_type), NUM_BITS, fi);
 
-      fclose(fi);
-    }
+    fclose(fi);
+  }
 
   finish();
 
@@ -610,12 +601,12 @@ title(void)
   /* Reset letters: */
 
   for (size_t i = 0; i < strlen(titlestr); i++)
-    {
-      letters[i].x = (rand() % WIDTH);
-      letters[i].y = (rand() % HEIGHT);
-      letters[i].xm = 0;
-      letters[i].ym = 0;
-    }
+  {
+    letters[i].x = (rand() % WIDTH);
+    letters[i].y = (rand() % HEIGHT);
+    letters[i].xm = 0;
+    letters[i].ym = 0;
+  }
 
   x = (rand() % WIDTH);
   y = (rand() % HEIGHT);
@@ -625,251 +616,222 @@ title(void)
   size = 40;
 
   do
+  {
+    last_time = SDL_GetTicks();
+
+    counter++;
+
+    /* Rotate rock: */
+
+    angle = ((angle + 2) % 360);
+
+    /* Make rock grow: */
+
+    if ((counter % 3) == 0)
     {
-      last_time = SDL_GetTicks();
-
-      counter++;
-
-      /* Rotate rock: */
-
-      angle = ((angle + 2) % 360);
-
-      /* Make rock grow: */
-
-      if ((counter % 3) == 0)
-        {
-          if (size > 1)
-            {
-              size--;
-            }
-        }
-
-      /* Move rock: */
-
-      x = x + xm;
-
-      if (x >= WIDTH)
-        {
-          x = x - WIDTH;
-        }
-
-      y = y + ym;
-
-      if (y >= HEIGHT)
-        {
-          y = y - HEIGHT;
-        }
-      else if (y < 0)
-        {
-          y = y + HEIGHT;
-        }
-
-      /* Handle events: */
-
-      while (SDL_PollEvent(&event) > 0)
-        {
-          if (event.type == SDL_QUIT)
-            {
-              done = true;
-              quit = true;
-            }
-          else if (event.type == SDL_KEYDOWN)
-            {
-              switch (event.key.keysym.scancode)
-                {
-                case SDL_SCANCODE_SPACE:
-                  done = true;
-                  break;
-                case SDL_SCANCODE_ESCAPE:
-                  done = true;
-                  quit = true;
-                  break;
-                default:
-                  break;
-                }
-            }
-#ifdef JOY_YES
-          else if (event.type == SDL_JOYBUTTONDOWN)
-            {
-              done = true;
-            }
-#endif
-          else if (event.type == SDL_MOUSEBUTTONDOWN)
-            {
-              if (event.button.x >= (WIDTH - 50) / 2 && event.button.x <= (WIDTH + 50) / 2 && event.button.y >= 180 && event.button.y <= 195)
-                {
-                  /* Start! */
-
-                  game_pending = false;
-                  done = true;
-                }
-              else if (event.button.x >= (WIDTH - 80) / 2 && event.button.x <= (WIDTH + 80) / 2 && event.button.y >= 200 && event.button.y <= 215 && game_pending)
-                {
-                  done = true;
-                }
-            }
-        }
-
-      /* Move title characters: */
-
-      if (snapped < strlen(titlestr))
-        {
-          for (size_t i = 0; i < strlen(titlestr); i++)
-            {
-              letters[i].x = letters[i].x + letters[i].xm;
-              letters[i].y = letters[i].y + letters[i].ym;
-
-              /* Home in on final spot! */
-
-              if (letters[i].x > ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) && letters[i].xm > -4)
-                {
-                  letters[i].xm--;
-                }
-              else if (letters[i].x < ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) && letters[i].xm < 4)
-                {
-                  letters[i].xm++;
-                }
-
-              if (letters[i].y > 100 && letters[i].ym > -4)
-                {
-                  letters[i].ym--;
-                }
-              else if (letters[i].y < 100 && letters[i].ym < 4)
-                {
-                  letters[i].ym++;
-                }
-
-              /* Snap into place: */
-
-              if (letters[i].x >= ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) - 8 && letters[i].x <= ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) + 8 && letters[i].y >= 92 && letters[i].y <= 108 && (letters[i].xm != 0 || letters[i].ym != 0))
-                {
-                  letters[i].x = ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14));
-                  letters[i].xm = 0;
-
-                  letters[i].y = 100;
-                  letters[i].ym = 0;
-
-                  snapped++;
-                }
-            }
-        }
-
-      /* Draw screen: */
-
-      /* (Erase first) */
-
-      SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
-      SDL_RenderClear(g_renderer);
-
-      /* (Title) */
-
-      if (snapped != strlen(titlestr))
-        {
-          for (size_t i = 0; i < strlen(titlestr); i++)
-            {
-              draw_char(titlestr[i], letters[i].x, letters[i].y, 10,
-                        mkcolor(255, 255, 255));
-            }
-        }
-      else
-        {
-          for (size_t i = 0; i < strlen(titlestr); i++)
-            {
-              z1 = (i + counter) % 255;
-              z2 = ((i + counter + 128) * 2) % 255;
-              z3 = ((i + counter) * 5) % 255;
-
-              draw_char(titlestr[i], letters[i].x, letters[i].y, 10,
-                        mkcolor(z1, z2, z3));
-            }
-        }
-
-      /* (Credits) */
-
-      if (snapped == strlen(titlestr))
-        {
-          draw_centered_text("BY BILL KENDRICK", 140, 5,
-                             mkcolor(128, 128, 128));
-          draw_centered_text("NEW BREED SOFTWARE", 155, 5,
-                             mkcolor(96, 96, 96));
-
-          sprintf(str, "HIGH %.6ld", high);
-          draw_text(str, (WIDTH - 110) / 2, 5, 5, mkcolor(128, 255, 255));
-          draw_text(str, (WIDTH - 110) / 2 + 1, 6, 5, mkcolor(128, 255, 255));
-
-          if (score != 0 && (score != high || (counter % 20) < 10))
-            {
-              if (!game_pending)
-                {
-                  sprintf(str, "LAST %.6ld", score);
-                }
-              else
-                {
-                  sprintf(str, "SCR  %.6ld", score);
-                }
-              draw_text(str, (WIDTH - 110) / 2, 25, 5, mkcolor(128, 128, 255));
-              draw_text(str, (WIDTH - 110) / 2 + 1, 26, 5, mkcolor(128, 128, 255));
-            }
-        }
-
-      draw_text("START", (WIDTH - 50) / 2, 180, 5, mkcolor(0, 255, 0));
-
-      if (game_pending)
-        {
-          draw_text("CONTINUE", (WIDTH - 80) / 2, 200, 5, mkcolor(0, 255, 0));
-        }
-
-      /* (Giant rock) */
-
-      draw_segment(40 / size, 0, mkcolor(255, 255, 255),
-                   30 / size, 30, mkcolor(255, 255, 255),
-                   x, y, angle);
-      draw_segment(30 / size, 30, mkcolor(255, 255, 255),
-                   40 / size, 55, mkcolor(255, 255, 255),
-                   x, y, angle);
-      draw_segment(40 / size, 55, mkcolor(255, 255, 255),
-                   25 / size, 90, mkcolor(255, 255, 255),
-                   x, y, angle);
-      draw_segment(25 / size, 90, mkcolor(255, 255, 255),
-                   40 / size, 120, mkcolor(255, 255, 255),
-                   x, y, angle);
-      draw_segment(40 / size, 120, mkcolor(255, 255, 255),
-                   35 / size, 130, mkcolor(255, 255, 255),
-                   x, y, angle);
-      draw_segment(35 / size, 130, mkcolor(255, 255, 255),
-                   40 / size, 160, mkcolor(255, 255, 255),
-                   x, y, angle);
-      draw_segment(40 / size, 160, mkcolor(255, 255, 255),
-                   30 / size, 200, mkcolor(255, 255, 255),
-                   x, y, angle);
-      draw_segment(30 / size, 200, mkcolor(255, 255, 255),
-                   45 / size, 220, mkcolor(255, 255, 255),
-                   x, y, angle);
-      draw_segment(45 / size, 220, mkcolor(255, 255, 255),
-                   25 / size, 265, mkcolor(255, 255, 255),
-                   x, y, angle);
-      draw_segment(25 / size, 265, mkcolor(255, 255, 255),
-                   30 / size, 300, mkcolor(255, 255, 255),
-                   x, y, angle);
-      draw_segment(30 / size, 300, mkcolor(255, 255, 255),
-                   45 / size, 335, mkcolor(255, 255, 255),
-                   x, y, angle);
-      draw_segment(45 / size, 335, mkcolor(255, 255, 255),
-                   40 / size, 0, mkcolor(255, 255, 255),
-                   x, y, angle);
-
-      /* Flush and pause! */
-
-      SDL_RenderPresent(g_renderer);
-
-      now_time = SDL_GetTicks();
-
-      if (now_time < last_time + (1000 / FPS))
-        {
-          SDL_Delay(last_time + 1000 / FPS - now_time);
-        }
+      if (size > 1)
+      {
+        size--;
+      }
     }
-  while (!done);
+
+    /* Move rock: */
+
+    x = x + xm;
+
+    if (x >= WIDTH)
+    {
+      x = x - WIDTH;
+    }
+
+    y = y + ym;
+
+    if (y >= HEIGHT)
+    {
+      y = y - HEIGHT;
+    }
+    else if (y < 0)
+    {
+      y = y + HEIGHT;
+    }
+
+    /* Handle events: */
+
+    while (SDL_PollEvent(&event) > 0)
+    {
+      if (event.type == SDL_QUIT)
+      {
+        done = true;
+        quit = true;
+      }
+      else if (event.type == SDL_KEYDOWN)
+      {
+        switch (event.key.keysym.scancode)
+        {
+          case SDL_SCANCODE_SPACE:
+            done = true;
+            break;
+          case SDL_SCANCODE_ESCAPE:
+            done = true;
+            quit = true;
+            break;
+          default:
+            break;
+        }
+      }
+#ifdef JOY_YES
+      else if (event.type == SDL_JOYBUTTONDOWN)
+      {
+        done = true;
+      }
+#endif
+      else if (event.type == SDL_MOUSEBUTTONDOWN)
+      {
+        if (event.button.x >= (WIDTH - 50) / 2 && event.button.x <= (WIDTH + 50) / 2 && event.button.y >= 180 && event.button.y <= 195)
+        {
+          /* Start! */
+
+          game_pending = false;
+          done = true;
+        }
+        else if (event.button.x >= (WIDTH - 80) / 2 && event.button.x <= (WIDTH + 80) / 2 && event.button.y >= 200 && event.button.y <= 215 && game_pending)
+        {
+          done = true;
+        }
+      }
+    }
+
+    /* Move title characters: */
+
+    if (snapped < strlen(titlestr))
+    {
+      for (size_t i = 0; i < strlen(titlestr); i++)
+      {
+        letters[i].x = letters[i].x + letters[i].xm;
+        letters[i].y = letters[i].y + letters[i].ym;
+
+        /* Home in on final spot! */
+
+        if (letters[i].x > ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) && letters[i].xm > -4)
+        {
+          letters[i].xm--;
+        }
+        else if (letters[i].x < ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) && letters[i].xm < 4)
+        {
+          letters[i].xm++;
+        }
+
+        if (letters[i].y > 100 && letters[i].ym > -4)
+        {
+          letters[i].ym--;
+        }
+        else if (letters[i].y < 100 && letters[i].ym < 4)
+        {
+          letters[i].ym++;
+        }
+
+        /* Snap into place: */
+
+        if (letters[i].x >= ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) - 8 && letters[i].x <= ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) + 8 && letters[i].y >= 92 && letters[i].y <= 108 && (letters[i].xm != 0 || letters[i].ym != 0))
+        {
+          letters[i].x = ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14));
+          letters[i].xm = 0;
+
+          letters[i].y = 100;
+          letters[i].ym = 0;
+
+          snapped++;
+        }
+      }
+    }
+
+    /* Draw screen: */
+
+    /* (Erase first) */
+
+    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+    SDL_RenderClear(g_renderer);
+
+    /* (Title) */
+
+    if (snapped != strlen(titlestr))
+    {
+      for (size_t i = 0; i < strlen(titlestr); i++)
+      {
+        draw_char(titlestr[i], letters[i].x, letters[i].y, 10, mkcolor(255, 255, 255));
+      }
+    }
+    else
+    {
+      for (size_t i = 0; i < strlen(titlestr); i++)
+      {
+        z1 = (i + counter) % 255;
+        z2 = ((i + counter + 128) * 2) % 255;
+        z3 = ((i + counter) * 5) % 255;
+
+        draw_char(titlestr[i], letters[i].x, letters[i].y, 10, mkcolor(z1, z2, z3));
+      }
+    }
+
+    /* (Credits) */
+
+    if (snapped == strlen(titlestr))
+    {
+      draw_centered_text("BY BILL KENDRICK", 140, 5, mkcolor(128, 128, 128));
+      draw_centered_text("NEW BREED SOFTWARE", 155, 5, mkcolor(96, 96, 96));
+
+      sprintf(str, "HIGH %.6ld", high);
+      draw_text(str, (WIDTH - 110) / 2, 5, 5, mkcolor(128, 255, 255));
+      draw_text(str, (WIDTH - 110) / 2 + 1, 6, 5, mkcolor(128, 255, 255));
+
+      if (score != 0 && (score != high || (counter % 20) < 10))
+      {
+        if (!game_pending)
+        {
+          sprintf(str, "LAST %.6ld", score);
+        }
+        else
+        {
+          sprintf(str, "SCR  %.6ld", score);
+        }
+        draw_text(str, (WIDTH - 110) / 2, 25, 5, mkcolor(128, 128, 255));
+        draw_text(str, (WIDTH - 110) / 2 + 1, 26, 5, mkcolor(128, 128, 255));
+      }
+    }
+
+    draw_text("START", (WIDTH - 50) / 2, 180, 5, mkcolor(0, 255, 0));
+
+    if (game_pending)
+    {
+      draw_text("CONTINUE", (WIDTH - 80) / 2, 200, 5, mkcolor(0, 255, 0));
+    }
+
+    /* (Giant rock) */
+
+    draw_segment(40 / size, 0, mkcolor(255, 255, 255), 30 / size, 30, mkcolor(255, 255, 255), x, y, angle);
+    draw_segment(30 / size, 30, mkcolor(255, 255, 255), 40 / size, 55, mkcolor(255, 255, 255), x, y, angle);
+    draw_segment(40 / size, 55, mkcolor(255, 255, 255), 25 / size, 90, mkcolor(255, 255, 255), x, y, angle);
+    draw_segment(25 / size, 90, mkcolor(255, 255, 255), 40 / size, 120, mkcolor(255, 255, 255), x, y, angle);
+    draw_segment(40 / size, 120, mkcolor(255, 255, 255), 35 / size, 130, mkcolor(255, 255, 255), x, y, angle);
+    draw_segment(35 / size, 130, mkcolor(255, 255, 255), 40 / size, 160, mkcolor(255, 255, 255), x, y, angle);
+    draw_segment(40 / size, 160, mkcolor(255, 255, 255), 30 / size, 200, mkcolor(255, 255, 255), x, y, angle);
+    draw_segment(30 / size, 200, mkcolor(255, 255, 255), 45 / size, 220, mkcolor(255, 255, 255), x, y, angle);
+    draw_segment(45 / size, 220, mkcolor(255, 255, 255), 25 / size, 265, mkcolor(255, 255, 255), x, y, angle);
+    draw_segment(25 / size, 265, mkcolor(255, 255, 255), 30 / size, 300, mkcolor(255, 255, 255), x, y, angle);
+    draw_segment(30 / size, 300, mkcolor(255, 255, 255), 45 / size, 335, mkcolor(255, 255, 255), x, y, angle);
+    draw_segment(45 / size, 335, mkcolor(255, 255, 255), 40 / size, 0, mkcolor(255, 255, 255), x, y, angle);
+
+    /* Flush and pause! */
+
+    SDL_RenderPresent(g_renderer);
+
+    now_time = SDL_GetTicks();
+
+    if (now_time < last_time + (1000 / FPS))
+    {
+      SDL_Delay(last_time + 1000 / FPS - now_time);
+    }
+  } while (!done);
 
   return (quit);
 }
@@ -888,757 +850,713 @@ game(void)
   uint32_t now_time = 0, last_time = 0;
 
   if (!game_pending)
-    {
-      lives = 3;
-      score = 0;
+  {
+    lives = 3;
+    score = 0;
 
-      player_alive = 1;
-      player_die_timer = 0;
-      player_angle = 90;
-      player_x = (WIDTH / 2) << 4;
-      player_y = (HEIGHT / 2) << 4;
-      player_xm = 0;
-      player_ym = 0;
+    player_alive = 1;
+    player_die_timer = 0;
+    player_angle = 90;
+    player_x = (WIDTH / 2) << 4;
+    player_y = (HEIGHT / 2) << 4;
+    player_xm = 0;
+    player_ym = 0;
 
-      level = 1;
-      reset_level();
-    }
+    level = 1;
+    reset_level();
+  }
 
   game_pending = true;
 
   /* Hide mouse cursor: */
 
   if (fullscreen)
-    {
-      SDL_ShowCursor(0);
-    }
+  {
+    SDL_ShowCursor(0);
+  }
 
   /* Play music: */
 
   if (use_sound)
+  {
+    if (!Mix_PlayingMusic())
     {
-      if (!Mix_PlayingMusic())
-        {
-          Mix_PlayMusic(game_music, -1);
-        }
+      Mix_PlayMusic(game_music, -1);
     }
+  }
 
   do
+  {
+    last_time = SDL_GetTicks();
+    counter++;
+
+    /* Handle events: */
+
+    while (SDL_PollEvent(&event) > 0)
     {
-      last_time = SDL_GetTicks();
-      counter++;
+      if (event.type == SDL_QUIT)
+      {
+        /* Quit! */
 
-      /* Handle events: */
-
-      while (SDL_PollEvent(&event) > 0)
+        done = true;
+        quit = true;
+      }
+      else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
+      {
+        if (event.type == SDL_KEYDOWN)
         {
-          if (event.type == SDL_QUIT)
-            {
-              /* Quit! */
-
+          switch (event.key.keysym.scancode)
+          {
+            case SDL_SCANCODE_ESCAPE:
+              /* Return to menu! */
               done = true;
-              quit = true;
-            }
-          else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
-            {
-              if (event.type == SDL_KEYDOWN)
-                {
-                  switch (event.key.keysym.scancode)
-                    {
-                    case SDL_SCANCODE_ESCAPE:
-                      /* Return to menu! */
-                      done = true;
-                      break;
+              break;
 
-                      /* Key press... */
-                    case SDL_SCANCODE_RIGHT:
-                      /* Rotate CW */
-                      left_pressed = false;
-                      right_pressed = true;
-                      break;
-                    case SDL_SCANCODE_LEFT:
-                      /* Rotate CCW */
-                      left_pressed = true;
-                      right_pressed = false;
-                      break;
-                    case SDL_SCANCODE_UP:
-                      /* Thrust! */
-                      up_pressed = true;
-                      break;
-                    case SDL_SCANCODE_SPACE:
-                      if (player_alive)
-                        {
-                          /* Fire a bullet! */
-                          add_bullet(player_x >> 4, player_y >> 4, player_angle, player_xm, player_ym);
-                        }
-                      break;
-                    case SDL_SCANCODE_LSHIFT:
-                    case SDL_SCANCODE_RSHIFT:
-                      /* Respawn now (if applicable) */
-                      shift_pressed = true;
-                      break;
-                    default:
-                      break;
-                    }
-                }
-              else if (event.type == SDL_KEYUP)
-                {
-                  /* Key release... */
-                  switch (event.key.keysym.scancode)
-                    {
-                    case SDL_SCANCODE_RIGHT:
-                      right_pressed = false;
-                      break;
-                    case SDL_SCANCODE_LEFT:
-                      left_pressed = false;
-                      break;
-                    case SDL_SCANCODE_UP:
-                      up_pressed = false;
-                      break;
-                    case SDL_SCANCODE_LSHIFT:
-                    case SDL_SCANCODE_RSHIFT:
-                      /* Respawn now (if applicable) */
-                      shift_pressed = false;
-                      break;
-                    default:
-                      break;
-                    }
-                }
-            }
+              /* Key press... */
+            case SDL_SCANCODE_RIGHT:
+              /* Rotate CW */
+              left_pressed = false;
+              right_pressed = true;
+              break;
+            case SDL_SCANCODE_LEFT:
+              /* Rotate CCW */
+              left_pressed = true;
+              right_pressed = false;
+              break;
+            case SDL_SCANCODE_UP:
+              /* Thrust! */
+              up_pressed = true;
+              break;
+            case SDL_SCANCODE_SPACE:
+              if (player_alive)
+              {
+                /* Fire a bullet! */
+                add_bullet(player_x >> 4, player_y >> 4, player_angle, player_xm, player_ym);
+              }
+              break;
+            case SDL_SCANCODE_LSHIFT:
+            case SDL_SCANCODE_RSHIFT:
+              /* Respawn now (if applicable) */
+              shift_pressed = true;
+              break;
+            default:
+              break;
+          }
+        }
+        else if (event.type == SDL_KEYUP)
+        {
+          /* Key release... */
+          switch (event.key.keysym.scancode)
+          {
+            case SDL_SCANCODE_RIGHT:
+              right_pressed = false;
+              break;
+            case SDL_SCANCODE_LEFT:
+              left_pressed = false;
+              break;
+            case SDL_SCANCODE_UP:
+              up_pressed = false;
+              break;
+            case SDL_SCANCODE_LSHIFT:
+            case SDL_SCANCODE_RSHIFT:
+              /* Respawn now (if applicable) */
+              shift_pressed = false;
+              break;
+            default:
+              break;
+          }
+        }
+      }
 #ifdef JOY_YES
-          else if (event.type == SDL_JOYBUTTONDOWN && player_alive)
-            {
-              if (event.jbutton.button == JOY_B)
-                {
-                  /* Fire a bullet! */
+      else if (event.type == SDL_JOYBUTTONDOWN && player_alive)
+      {
+        if (event.jbutton.button == JOY_B)
+        {
+          /* Fire a bullet! */
 
-                  add_bullet(x >> 4, y >> 4, angle, player_xm, player_ym);
-                }
-              else if (event.jbutton.button == JOY_A)
-                {
-                  /* Thrust: */
+          add_bullet(x >> 4, y >> 4, angle, player_xm, player_ym);
+        }
+        else if (event.jbutton.button == JOY_A)
+        {
+          /* Thrust: */
 
-                  up_pressed = true;
-                }
-              else
-                {
-                  shift_pressed = true;
-                }
-            }
-          else if (event.type == SDL_JOYBUTTONUP)
-            {
-              if (event.jbutton.button == JOY_A)
-                {
-                  /* Stop thrust: */
+          up_pressed = true;
+        }
+        else
+        {
+          shift_pressed = true;
+        }
+      }
+      else if (event.type == SDL_JOYBUTTONUP)
+      {
+        if (event.jbutton.button == JOY_A)
+        {
+          /* Stop thrust: */
 
-                  up_pressed = false;
-                }
-              else if (event.jbutton.button != JOY_B)
-                {
-                  shift_pressed = false;
-                }
-            }
-          else if (event.type == SDL_JOYAXISMOTION)
-            {
-              if (event.jaxis.axis == JOY_X)
-                {
-                  if (event.jaxis.value < -256)
-                    {
-                      left_pressed = true;
-                      right_pressed = false;
-                    }
-                  else if (event.jaxis.value > 256)
-                    {
-                      left_pressed = false;
-                      right_pressed = true;
-                    }
-                  else
-                    {
-                      left_pressed = false;
-                      right_pressed = false;
-                    }
-                }
-            }
+          up_pressed = false;
+        }
+        else if (event.jbutton.button != JOY_B)
+        {
+          shift_pressed = false;
+        }
+      }
+      else if (event.type == SDL_JOYAXISMOTION)
+      {
+        if (event.jaxis.axis == JOY_X)
+        {
+          if (event.jaxis.value < -256)
+          {
+            left_pressed = true;
+            right_pressed = false;
+          }
+          else if (event.jaxis.value > 256)
+          {
+            left_pressed = false;
+            right_pressed = true;
+          }
+          else
+          {
+            left_pressed = false;
+            right_pressed = false;
+          }
+        }
+      }
 #endif
-        }
+    }
 
-      /* Rotate ship: */
+    /* Rotate ship: */
 
-      if (right_pressed)
+    if (right_pressed)
+    {
+      player_angle -= 8;
+      if (player_angle < 0)
+      {
+        player_angle += 360;
+      }
+    }
+    else if (left_pressed)
+    {
+      player_angle += 8;
+      if (player_angle >= 360)
+      {
+        player_angle -= 360;
+      }
+    }
+
+    /* Thrust ship: */
+
+    if (up_pressed && player_alive)
+    {
+      /* Move forward: */
+
+      player_xm += (fast_cos(player_angle >> 3) * 3) >> 10;
+      player_ym -= (fast_sin(player_angle >> 3) * 3) >> 10;
+
+      /* Start thruster sound: */
+      if (use_sound)
+      {
+        if (!Mix_Playing(CHAN_THRUST))
         {
-          player_angle -= 8;
-          if (player_angle < 0)
-            {
-              player_angle += 360;
-            }
+          Mix_PlayChannel(CHAN_THRUST, sounds[SND_THRUST], -1);
         }
-      else if (left_pressed)
+      }
+    }
+    else
+    {
+      /* Slow down (unrealistic, but.. feh!) */
+
+      if ((counter % 20) == 0)
+      {
+        player_xm = (player_xm * 7) / 8;
+        player_ym = (player_ym * 7) / 8;
+      }
+
+      /* Stop thruster sound: */
+
+      if (use_sound)
+      {
+        if (Mix_Playing(CHAN_THRUST))
         {
-          player_angle += 8;
-          if (player_angle >= 360)
-            {
-              player_angle -= 360;
-            }
+          Mix_HaltChannel(CHAN_THRUST);
         }
+      }
+    }
 
-      /* Thrust ship: */
+    /* Handle player death: */
 
-      if (up_pressed && player_alive)
+    if (player_alive == 0)
+    {
+      player_die_timer--;
+
+      if (player_die_timer <= 0)
+      {
+        if (lives > 0)
         {
-          /* Move forward: */
+          /* Reset player: */
 
-          player_xm += (fast_cos(player_angle >> 3) * 3) >> 10;
-          player_ym -= (fast_sin(player_angle >> 3) * 3) >> 10;
+          player_die_timer = 0;
+          player_angle = 90;
+          player_x = (WIDTH / 2) << 4;
+          player_y = (HEIGHT / 2) << 4;
+          player_xm = 0;
+          player_ym = 0;
 
-          /* Start thruster sound: */
-          if (use_sound)
+          /* Only bring player back when it's alright to! */
+
+          player_alive = 1;
+
+          if (!shift_pressed)
+          {
+            for (size_t i = 0; i < NUM_ASTEROIDS && player_alive; i++)
             {
-              if (!Mix_Playing(CHAN_THRUST))
+              if (asteroids[i].alive)
+              {
+                if (asteroids[i].x >= (player_x >> 4) - (WIDTH / 5) && asteroids[i].x <= (player_x >> 4) + (WIDTH / 5) && asteroids[i].y >= (player_y >> 4) - (HEIGHT / 5) && asteroids[i].y <= (player_y >> 4) + (HEIGHT / 5))
                 {
-                  Mix_PlayChannel(CHAN_THRUST, sounds[SND_THRUST], -1);
-                }
-            }
-        }
-      else
-        {
-          /* Slow down (unrealistic, but.. feh!) */
+                  /* If any asteroid is too close for comfort,
+                     don't bring ship back yet! */
 
-          if ((counter % 20) == 0)
-            {
-              player_xm = (player_xm * 7) / 8;
-              player_ym = (player_ym * 7) / 8;
+                  player_alive = 0;
+                }
+              }
             }
+          }
+        }
+        else
+        {
+          done = true;
+          game_pending = false;
+        }
+      }
+    }
+
+    /* Erase screen: */
+
+    SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
+    SDL_RenderClear(g_renderer);
+    SDL_RenderCopy(g_renderer, g_texture, NULL, NULL);
+
+    /* Move ship: */
+
+    player_x += player_xm;
+    player_y += player_ym;
+
+    /* Wrap ship around edges of screen: */
+
+    if (player_x >= (WIDTH << 4))
+    {
+      player_x -= (WIDTH << 4);
+    }
+    else if (player_x < 0)
+    {
+      player_x += (WIDTH << 4);
+    }
+
+    if (player_y >= (HEIGHT << 4))
+    {
+      player_y -= (HEIGHT << 4);
+    }
+    else if (player_y < 0)
+    {
+      player_y += (HEIGHT << 4);
+    }
+
+    /* Move bullets: */
+
+    for (size_t i = 0; i < NUM_BULLETS; i++)
+    {
+      if (bullets[i].timer >= 0)
+      {
+        /* Bullet wears out: */
+
+        bullets[i].timer--;
+
+        /* Move bullet: */
+
+        bullets[i].x = bullets[i].x + bullets[i].xm;
+        bullets[i].y = bullets[i].y + bullets[i].ym;
+
+        /* Wrap bullet around edges of screen: */
+
+        if (bullets[i].x >= WIDTH)
+        {
+          bullets[i].x = bullets[i].x - WIDTH;
+        }
+        else if (bullets[i].x < 0)
+        {
+          bullets[i].x = bullets[i].x + WIDTH;
+        }
+
+        if (bullets[i].y >= HEIGHT)
+        {
+          bullets[i].y = bullets[i].y - HEIGHT;
+        }
+        else if (bullets[i].y < 0)
+        {
+          bullets[i].y = bullets[i].y + HEIGHT;
+        }
+
+        /* Check for collision with any asteroids! */
+
+        for (size_t j = 0; j < NUM_ASTEROIDS; j++)
+        {
+          if (bullets[i].timer > 0 && asteroids[j].alive)
+          {
+            if ((bullets[i].x + 5 >= asteroids[j].x - asteroids[j].size * AST_RADIUS) && (bullets[i].x - 5 <= asteroids[j].x + asteroids[j].size * AST_RADIUS) && (bullets[i].y + 5 >= asteroids[j].y - asteroids[j].size * AST_RADIUS) && (bullets[i].y - 5 <= asteroids[j].y + asteroids[j].size * AST_RADIUS))
+            {
+              /* Remove bullet! */
+
+              bullets[i].timer = 0;
+
+              hurt_asteroid(j, bullets[i].xm, bullets[i].ym, asteroids[j].size * 3);
+            }
+          }
+        }
+      }
+    }
+
+    /* Move asteroids: */
+
+    num_asteroids_alive = 0;
+
+    for (size_t i = 0; i < NUM_ASTEROIDS; i++)
+    {
+      if (asteroids[i].alive)
+      {
+        num_asteroids_alive++;
+
+        /* Move asteroid: */
+
+        if ((counter % 4) == 0)
+        {
+          asteroids[i].x = asteroids[i].x + asteroids[i].xm;
+          asteroids[i].y = asteroids[i].y + asteroids[i].ym;
+        }
+
+        /* Wrap asteroid around edges of screen: */
+
+        if (asteroids[i].x >= WIDTH)
+        {
+          asteroids[i].x = asteroids[i].x - WIDTH;
+        }
+        else if (asteroids[i].x < 0)
+        {
+          asteroids[i].x = asteroids[i].x + WIDTH;
+        }
+
+        if (asteroids[i].y >= HEIGHT)
+        {
+          asteroids[i].y = asteroids[i].y - HEIGHT;
+        }
+        else if (asteroids[i].y < 0)
+        {
+          asteroids[i].y = asteroids[i].y + HEIGHT;
+        }
+
+        /* Rotate asteroid: */
+
+        asteroids[i].angle = (asteroids[i].angle + asteroids[i].angle_m);
+
+        /* Wrap rotation angle... */
+
+        if (asteroids[i].angle < 0)
+        {
+          asteroids[i].angle = asteroids[i].angle + 360;
+        }
+        else if (asteroids[i].angle >= 360)
+        {
+          asteroids[i].angle = asteroids[i].angle - 360;
+        }
+
+        /* See if we collided with the player: */
+
+        if (asteroids[i].x >= (player_x >> 4) - SHIP_RADIUS && asteroids[i].x <= (player_x >> 4) + SHIP_RADIUS && asteroids[i].y >= (player_y >> 4) - SHIP_RADIUS && asteroids[i].y <= (player_y >> 4) + SHIP_RADIUS && player_alive)
+        {
+          hurt_asteroid(i, player_xm >> 4, player_ym >> 4, NUM_BITS);
+
+          player_alive = 0;
+          player_die_timer = 30;
+
+          playsound(SND_EXPLODE);
 
           /* Stop thruster sound: */
 
           if (use_sound)
+          {
+            if (Mix_Playing(CHAN_THRUST))
             {
-              if (Mix_Playing(CHAN_THRUST))
-                {
-                  Mix_HaltChannel(CHAN_THRUST);
-                }
+              Mix_HaltChannel(CHAN_THRUST);
             }
-        }
+          }
 
-      /* Handle player death: */
+          lives--;
 
-      if (player_alive == 0)
-        {
-          player_die_timer--;
-
-          if (player_die_timer <= 0)
+          if (lives == 0)
+          {
+            if (use_sound)
             {
-              if (lives > 0)
-                {
-                  /* Reset player: */
-
-                  player_die_timer = 0;
-                  player_angle = 90;
-                  player_x = (WIDTH / 2) << 4;
-                  player_y = (HEIGHT / 2) << 4;
-                  player_xm = 0;
-                  player_ym = 0;
-
-                  /* Only bring player back when it's alright to! */
-
-                  player_alive = 1;
-
-                  if (!shift_pressed)
-                    {
-                      for (size_t i = 0; i < NUM_ASTEROIDS && player_alive; i++)
-                        {
-                          if (asteroids[i].alive)
-                            {
-                              if (asteroids[i].x >= (player_x >> 4) - (WIDTH / 5) && asteroids[i].x <= (player_x >> 4) + (WIDTH / 5) && asteroids[i].y >= (player_y >> 4) - (HEIGHT / 5) && asteroids[i].y <= (player_y >> 4) + (HEIGHT / 5))
-                                {
-                                  /* If any asteroid is too close for comfort,
-                                     don't bring ship back yet! */
-
-                                  player_alive = 0;
-                                }
-                            }
-                        }
-                    }
-                }
-              else
-                {
-                  done = true;
-                  game_pending = false;
-                }
+              playsound(SND_GAMEOVER);
+              playsound(SND_GAMEOVER);
+              playsound(SND_GAMEOVER);
+              /* Mix_PlayChannel(CHAN_THRUST,
+                 sounds[SND_GAMEOVER], 0); */
             }
+            player_die_timer = 100;
+          }
         }
-
-      /* Erase screen: */
-
-      SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
-      SDL_RenderClear(g_renderer);
-      SDL_RenderCopy(g_renderer, g_texture, NULL, NULL);
-
-      /* Move ship: */
-
-      player_x += player_xm;
-      player_y += player_ym;
-
-      /* Wrap ship around edges of screen: */
-
-      if (player_x >= (WIDTH << 4))
-        {
-          player_x -= (WIDTH << 4);
-        }
-      else if (player_x < 0)
-        {
-          player_x += (WIDTH << 4);
-        }
-
-      if (player_y >= (HEIGHT << 4))
-        {
-          player_y -= (HEIGHT << 4);
-        }
-      else if (player_y < 0)
-        {
-          player_y += (HEIGHT << 4);
-        }
-
-      /* Move bullets: */
-
-      for (size_t i = 0; i < NUM_BULLETS; i++)
-        {
-          if (bullets[i].timer >= 0)
-            {
-              /* Bullet wears out: */
-
-              bullets[i].timer--;
-
-              /* Move bullet: */
-
-              bullets[i].x = bullets[i].x + bullets[i].xm;
-              bullets[i].y = bullets[i].y + bullets[i].ym;
-
-              /* Wrap bullet around edges of screen: */
-
-              if (bullets[i].x >= WIDTH)
-                {
-                  bullets[i].x = bullets[i].x - WIDTH;
-                }
-              else if (bullets[i].x < 0)
-                {
-                  bullets[i].x = bullets[i].x + WIDTH;
-                }
-
-              if (bullets[i].y >= HEIGHT)
-                {
-                  bullets[i].y = bullets[i].y - HEIGHT;
-                }
-              else if (bullets[i].y < 0)
-                {
-                  bullets[i].y = bullets[i].y + HEIGHT;
-                }
-
-              /* Check for collision with any asteroids! */
-
-              for (size_t j = 0; j < NUM_ASTEROIDS; j++)
-                {
-                  if (bullets[i].timer > 0 && asteroids[j].alive)
-                    {
-                      if ((bullets[i].x + 5 >= asteroids[j].x - asteroids[j].size * AST_RADIUS) && (bullets[i].x - 5 <= asteroids[j].x + asteroids[j].size * AST_RADIUS) && (bullets[i].y + 5 >= asteroids[j].y - asteroids[j].size * AST_RADIUS) && (bullets[i].y - 5 <= asteroids[j].y + asteroids[j].size * AST_RADIUS))
-                        {
-                          /* Remove bullet! */
-
-                          bullets[i].timer = 0;
-
-                          hurt_asteroid(j, bullets[i].xm, bullets[i].ym,
-                                        asteroids[j].size * 3);
-                        }
-                    }
-                }
-            }
-        }
-
-      /* Move asteroids: */
-
-      num_asteroids_alive = 0;
-
-      for (size_t i = 0; i < NUM_ASTEROIDS; i++)
-        {
-          if (asteroids[i].alive)
-            {
-              num_asteroids_alive++;
-
-              /* Move asteroid: */
-
-              if ((counter % 4) == 0)
-                {
-                  asteroids[i].x = asteroids[i].x + asteroids[i].xm;
-                  asteroids[i].y = asteroids[i].y + asteroids[i].ym;
-                }
-
-              /* Wrap asteroid around edges of screen: */
-
-              if (asteroids[i].x >= WIDTH)
-                {
-                  asteroids[i].x = asteroids[i].x - WIDTH;
-                }
-              else if (asteroids[i].x < 0)
-                {
-                  asteroids[i].x = asteroids[i].x + WIDTH;
-                }
-
-              if (asteroids[i].y >= HEIGHT)
-                {
-                  asteroids[i].y = asteroids[i].y - HEIGHT;
-                }
-              else if (asteroids[i].y < 0)
-                {
-                  asteroids[i].y = asteroids[i].y + HEIGHT;
-                }
-
-              /* Rotate asteroid: */
-
-              asteroids[i].angle = (asteroids[i].angle + asteroids[i].angle_m);
-
-              /* Wrap rotation angle... */
-
-              if (asteroids[i].angle < 0)
-                {
-                  asteroids[i].angle = asteroids[i].angle + 360;
-                }
-              else if (asteroids[i].angle >= 360)
-                {
-                  asteroids[i].angle = asteroids[i].angle - 360;
-                }
-
-              /* See if we collided with the player: */
-
-              if (asteroids[i].x >= (player_x >> 4) - SHIP_RADIUS && asteroids[i].x <= (player_x >> 4) + SHIP_RADIUS && asteroids[i].y >= (player_y >> 4) - SHIP_RADIUS && asteroids[i].y <= (player_y >> 4) + SHIP_RADIUS && player_alive)
-                {
-                  hurt_asteroid(i, player_xm >> 4, player_ym >> 4, NUM_BITS);
-
-                  player_alive = 0;
-                  player_die_timer = 30;
-
-                  playsound(SND_EXPLODE);
-
-                  /* Stop thruster sound: */
-
-                  if (use_sound)
-                    {
-                      if (Mix_Playing(CHAN_THRUST))
-                        {
-                          Mix_HaltChannel(CHAN_THRUST);
-                        }
-                    }
-
-                  lives--;
-
-                  if (lives == 0)
-                    {
-                      if (use_sound)
-                        {
-                          playsound(SND_GAMEOVER);
-                          playsound(SND_GAMEOVER);
-                          playsound(SND_GAMEOVER);
-                          /* Mix_PlayChannel(CHAN_THRUST,
-                             sounds[SND_GAMEOVER], 0); */
-                        }
-                      player_die_timer = 100;
-                    }
-                }
-            }
-        }
-
-      /* Move bits: */
-
-      for (size_t i = 0; i < NUM_BITS; i++)
-        {
-          if (bits[i].timer > 0)
-            {
-              /* Countdown bit's lifespan: */
-
-              bits[i].timer--;
-
-              /* Move the bit: */
-
-              bits[i].x = bits[i].x + bits[i].xm;
-              bits[i].y = bits[i].y + bits[i].ym;
-
-              /* Wrap bit around edges of screen: */
-
-              if (bits[i].x >= WIDTH)
-                {
-                  bits[i].x = bits[i].x - WIDTH;
-                }
-              else if (bits[i].x < 0)
-                {
-                  bits[i].x = bits[i].x + WIDTH;
-                }
-
-              if (bits[i].y >= HEIGHT)
-                {
-                  bits[i].y = bits[i].y - HEIGHT;
-                }
-              else if (bits[i].y < 0)
-                {
-                  bits[i].y = bits[i].y + HEIGHT;
-                }
-            }
-        }
-
-      /* Draw ship: */
-
-      if (player_alive)
-        {
-          draw_segment(SHIP_RADIUS, 0, mkcolor(128, 128, 255),
-                       SHIP_RADIUS / 2, 135, mkcolor(0, 0, 192),
-                       player_x >> 4, player_y >> 4,
-                       player_angle);
-
-          draw_segment(SHIP_RADIUS / 2, 135, mkcolor(0, 0, 192),
-                       0, 0, mkcolor(64, 64, 230),
-                       player_x >> 4, player_y >> 4,
-                       player_angle);
-
-          draw_segment(0, 0, mkcolor(64, 64, 230),
-                       SHIP_RADIUS / 2, 225, mkcolor(0, 0, 192),
-                       player_x >> 4, player_y >> 4,
-                       player_angle);
-
-          draw_segment(SHIP_RADIUS / 2, 225, mkcolor(0, 0, 192),
-                       SHIP_RADIUS, 0, mkcolor(128, 128, 255),
-                       player_x >> 4, player_y >> 4,
-                       player_angle);
-
-          /* Draw flame: */
-
-          if (up_pressed)
-            {
-              draw_segment(0, 0, mkcolor(255, 255, 255),
-                           (rand() % 20), 180, mkcolor(255, 0, 0),
-                           player_x >> 4, player_y >> 4,
-                           player_angle);
-            }
-        }
-
-      /* Draw bullets: */
-
-      for (size_t i = 0; i < NUM_BULLETS; i++)
-        {
-          if (bullets[i].timer >= 0)
-            {
-              draw_line(bullets[i].x - (rand() % 3) - bullets[i].xm * 2,
-                        bullets[i].y - (rand() % 3) - bullets[i].ym * 2,
-                        mkcolor((rand() % 3) * 128,
-                                (rand() % 3) * 128,
-                                (rand() % 3) * 128),
-                        bullets[i].x + (rand() % 3) - bullets[i].xm * 2,
-                        bullets[i].y + (rand() % 3) - bullets[i].ym * 2,
-                        mkcolor((rand() % 3) * 128,
-                                (rand() % 3) * 128,
-                                (rand() % 3) * 128));
-
-              draw_line(bullets[i].x + (rand() % 3) - bullets[i].xm * 2,
-                        bullets[i].y - (rand() % 3) - bullets[i].ym * 2,
-                        mkcolor((rand() % 3) * 128,
-                                (rand() % 3) * 128,
-                                (rand() % 3) * 128),
-                        bullets[i].x - (rand() % 3) - bullets[i].xm * 2,
-                        bullets[i].y + (rand() % 3) - bullets[i].ym * 2,
-                        mkcolor((rand() % 3) * 128,
-                                (rand() % 3) * 128,
-                                (rand() % 3) * 128));
-
-              draw_thick_line(bullets[i].x - (rand() % 5),
-                              bullets[i].y - (rand() % 5),
-                              mkcolor((rand() % 3) * 128 + 64,
-                                      (rand() % 3) * 128 + 64,
-                                      (rand() % 3) * 128 + 64),
-                              bullets[i].x + (rand() % 5),
-                              bullets[i].y + (rand() % 5),
-                              mkcolor((rand() % 3) * 128 + 64,
-                                      (rand() % 3) * 128 + 64,
-                                      (rand() % 3) * 128 + 64));
-
-              draw_thick_line(bullets[i].x + (rand() % 5),
-                              bullets[i].y - (rand() % 5),
-                              mkcolor((rand() % 3) * 128 + 64,
-                                      (rand() % 3) * 128 + 64,
-                                      (rand() % 3) * 128 + 64),
-                              bullets[i].x - (rand() % 5),
-                              bullets[i].y + (rand() % 5),
-                              mkcolor((rand() % 3) * 128 + 64,
-                                      (rand() % 3) * 128 + 64,
-                                      (rand() % 3) * 128 + 64));
-            }
-        }
-
-      /* Draw asteroids: */
-
-      for (size_t i = 0; i < NUM_ASTEROIDS; i++)
-        {
-          if (asteroids[i].alive)
-            {
-              draw_asteroid(asteroids[i].size,
-                            asteroids[i].x, asteroids[i].y,
-                            asteroids[i].angle,
-                            asteroids[i].shape);
-            }
-        }
-
-      /* Draw bits: */
-
-      for (size_t i = 0; i < NUM_BITS; i++)
-        {
-          if (bits[i].timer > 0)
-            {
-              draw_line(bits[i].x, bits[i].y, mkcolor(255, 255, 255),
-                        bits[i].x + bits[i].xm,
-                        bits[i].y + bits[i].ym, mkcolor(255, 255, 255));
-            }
-        }
-
-      /* Draw score: */
-
-      sprintf(str, "%.6ld", score);
-      draw_text(str, 3, 3, 14, mkcolor(255, 255, 255));
-      draw_text(str, 4, 4, 14, mkcolor(255, 255, 255));
-
-      /* Level: */
-
-      sprintf(str, "%ld", level);
-      draw_text(str, (WIDTH - 14) / 2, 3, 14, mkcolor(255, 255, 255));
-      draw_text(str, (WIDTH - 14) / 2 + 1, 4, 14, mkcolor(255, 255, 255));
-
-      /* Draw lives: */
-      size_t k = 0;
-      for (size_t i = 0; i < lives; i++, k++)
-        {
-          draw_segment(16, 0, mkcolor(255, 255, 255),
-                       4, 135, mkcolor(255, 255, 255),
-                       WIDTH - 10 - i * 10, 20,
-                       90);
-
-          draw_segment(8, 135, mkcolor(255, 255, 255),
-                       0, 0, mkcolor(255, 255, 255),
-                       WIDTH - 10 - i * 10, 20,
-                       90);
-
-          draw_segment(0, 0, mkcolor(255, 255, 255),
-                       8, 225, mkcolor(255, 255, 255),
-                       WIDTH - 10 - i * 10, 20,
-                       90);
-
-          draw_segment(8, 225, mkcolor(255, 255, 255),
-                       16, 0, mkcolor(255, 255, 255),
-                       WIDTH - 10 - i * 10, 20,
-                       90);
-        }
-
-      if (player_die_timer > 0)
-        {
-          size_t j = 0;
-
-          if (player_die_timer > 30)
-            {
-              j = 30;
-            }
-          else
-            {
-              j = player_die_timer;
-            }
-
-          draw_segment((16 * j) / 30, 0, mkcolor(255, 255, 255),
-                       (4 * j) / 30, 135, mkcolor(255, 255, 255),
-                       WIDTH - 10 - k * 10, 20,
-                       90);
-
-          draw_segment((8 * j) / 30, 135, mkcolor(255, 255, 255),
-                       0, 0, mkcolor(255, 255, 255),
-                       WIDTH - 10 - k * 10, 20,
-                       90);
-
-          draw_segment(0, 0, mkcolor(255, 255, 255),
-                       (8 * j) / 30, 225, mkcolor(255, 255, 255),
-                       WIDTH - 10 - k * 10, 20,
-                       90);
-
-          draw_segment((8 * j) / 30, 225, mkcolor(255, 255, 255),
-                       (16 * j) / 30, 0, mkcolor(255, 255, 255),
-                       WIDTH - 10 - k * 10, 20,
-                       90);
-        }
-
-      /* Zooming level effect: */
-
-      if (text_zoom > 0)
-        {
-          if ((counter % 2) == 0)
-            {
-              text_zoom--;
-            }
-
-          draw_text(zoom_str, (WIDTH - (strlen(zoom_str) * text_zoom)) / 2,
-                    (HEIGHT - text_zoom) / 2,
-                    text_zoom, mkcolor(text_zoom * (256 / ZOOM_START), 0, 0));
-        }
-
-      /* Game over? */
-
-      if (player_alive == 0 && lives == 0)
-        {
-          if (player_die_timer > 14)
-            {
-              draw_text("GAME OVER",
-                        (WIDTH - 9 * player_die_timer) / 2,
-                        (HEIGHT - player_die_timer) / 2,
-                        player_die_timer,
-                        mkcolor(rand() % 255,
-                                rand() % 255,
-                                rand() % 255));
-            }
-          else
-            {
-              draw_text("GAME OVER",
-                        (WIDTH - 9 * 14) / 2,
-                        (HEIGHT - 14) / 2,
-                        14,
-                        mkcolor(255, 255, 255));
-            }
-        }
-
-      /* Go to next level? */
-
-      if (num_asteroids_alive == 0)
-        {
-          level++;
-
-          reset_level();
-        }
-
-      /* Flush and pause! */
-
-      SDL_RenderPresent(g_renderer);
-
-      now_time = SDL_GetTicks();
-
-      if (now_time < last_time + (1000 / FPS))
-        {
-          SDL_Delay(last_time + 1000 / FPS - now_time);
-        }
+      }
     }
-  while (!done);
+
+    /* Move bits: */
+
+    for (size_t i = 0; i < NUM_BITS; i++)
+    {
+      if (bits[i].timer > 0)
+      {
+        /* Countdown bit's lifespan: */
+
+        bits[i].timer--;
+
+        /* Move the bit: */
+
+        bits[i].x = bits[i].x + bits[i].xm;
+        bits[i].y = bits[i].y + bits[i].ym;
+
+        /* Wrap bit around edges of screen: */
+
+        if (bits[i].x >= WIDTH)
+        {
+          bits[i].x = bits[i].x - WIDTH;
+        }
+        else if (bits[i].x < 0)
+        {
+          bits[i].x = bits[i].x + WIDTH;
+        }
+
+        if (bits[i].y >= HEIGHT)
+        {
+          bits[i].y = bits[i].y - HEIGHT;
+        }
+        else if (bits[i].y < 0)
+        {
+          bits[i].y = bits[i].y + HEIGHT;
+        }
+      }
+    }
+
+    /* Draw ship: */
+
+    if (player_alive)
+    {
+      draw_segment(SHIP_RADIUS, 0, mkcolor(128, 128, 255), SHIP_RADIUS / 2, 135, mkcolor(0, 0, 192), player_x >> 4, player_y >> 4, player_angle);
+
+      draw_segment(SHIP_RADIUS / 2, 135, mkcolor(0, 0, 192), 0, 0, mkcolor(64, 64, 230), player_x >> 4, player_y >> 4, player_angle);
+
+      draw_segment(0, 0, mkcolor(64, 64, 230), SHIP_RADIUS / 2, 225, mkcolor(0, 0, 192), player_x >> 4, player_y >> 4, player_angle);
+
+      draw_segment(SHIP_RADIUS / 2, 225, mkcolor(0, 0, 192), SHIP_RADIUS, 0, mkcolor(128, 128, 255), player_x >> 4, player_y >> 4, player_angle);
+
+      /* Draw flame: */
+
+      if (up_pressed)
+      {
+        draw_segment(0, 0, mkcolor(255, 255, 255), (rand() % 20), 180, mkcolor(255, 0, 0), player_x >> 4, player_y >> 4, player_angle);
+      }
+    }
+
+    /* Draw bullets: */
+
+    for (size_t i = 0; i < NUM_BULLETS; i++)
+    {
+      if (bullets[i].timer >= 0)
+      {
+        draw_line(bullets[i].x - (rand() % 3) - bullets[i].xm * 2,
+                  bullets[i].y - (rand() % 3) - bullets[i].ym * 2,
+                  mkcolor((rand() % 3) * 128,
+                          (rand() % 3) * 128,
+                          (rand() % 3) * 128),
+                  bullets[i].x + (rand() % 3) - bullets[i].xm * 2,
+                  bullets[i].y + (rand() % 3) - bullets[i].ym * 2,
+                  mkcolor((rand() % 3) * 128,
+                          (rand() % 3) * 128,
+                          (rand() % 3) * 128));
+
+        draw_line(bullets[i].x + (rand() % 3) - bullets[i].xm * 2,
+                  bullets[i].y - (rand() % 3) - bullets[i].ym * 2,
+                  mkcolor((rand() % 3) * 128,
+                          (rand() % 3) * 128,
+                          (rand() % 3) * 128),
+                  bullets[i].x - (rand() % 3) - bullets[i].xm * 2,
+                  bullets[i].y + (rand() % 3) - bullets[i].ym * 2,
+                  mkcolor((rand() % 3) * 128,
+                          (rand() % 3) * 128,
+                          (rand() % 3) * 128));
+
+        draw_thick_line(bullets[i].x - (rand() % 5),
+                        bullets[i].y - (rand() % 5),
+                        mkcolor((rand() % 3) * 128 + 64,
+                                (rand() % 3) * 128 + 64,
+                                (rand() % 3) * 128 + 64),
+                        bullets[i].x + (rand() % 5),
+                        bullets[i].y + (rand() % 5),
+                        mkcolor((rand() % 3) * 128 + 64,
+                                (rand() % 3) * 128 + 64,
+                                (rand() % 3) * 128 + 64));
+
+        draw_thick_line(bullets[i].x + (rand() % 5),
+                        bullets[i].y - (rand() % 5),
+                        mkcolor((rand() % 3) * 128 + 64,
+                                (rand() % 3) * 128 + 64,
+                                (rand() % 3) * 128 + 64),
+                        bullets[i].x - (rand() % 5),
+                        bullets[i].y + (rand() % 5),
+                        mkcolor((rand() % 3) * 128 + 64,
+                                (rand() % 3) * 128 + 64,
+                                (rand() % 3) * 128 + 64));
+      }
+    }
+
+    /* Draw asteroids: */
+
+    for (size_t i = 0; i < NUM_ASTEROIDS; i++)
+    {
+      if (asteroids[i].alive)
+      {
+        draw_asteroid(asteroids[i].size,
+                      asteroids[i].x,
+                      asteroids[i].y,
+                      asteroids[i].angle,
+                      asteroids[i].shape);
+      }
+    }
+
+    /* Draw bits: */
+
+    for (size_t i = 0; i < NUM_BITS; i++)
+    {
+      if (bits[i].timer > 0)
+      {
+        draw_line(bits[i].x, bits[i].y, mkcolor(255, 255, 255), bits[i].x + bits[i].xm, bits[i].y + bits[i].ym, mkcolor(255, 255, 255));
+      }
+    }
+
+    /* Draw score: */
+
+    sprintf(str, "%.6ld", score);
+    draw_text(str, 3, 3, 14, mkcolor(255, 255, 255));
+    draw_text(str, 4, 4, 14, mkcolor(255, 255, 255));
+
+    /* Level: */
+
+    sprintf(str, "%ld", level);
+    draw_text(str, (WIDTH - 14) / 2, 3, 14, mkcolor(255, 255, 255));
+    draw_text(str, (WIDTH - 14) / 2 + 1, 4, 14, mkcolor(255, 255, 255));
+
+    /* Draw lives: */
+    size_t k = 0;
+    for (size_t i = 0; i < lives; i++, k++)
+    {
+      draw_segment(16, 0, mkcolor(255, 255, 255), 4, 135, mkcolor(255, 255, 255), WIDTH - 10 - i * 10, 20, 90);
+
+      draw_segment(8, 135, mkcolor(255, 255, 255), 0, 0, mkcolor(255, 255, 255), WIDTH - 10 - i * 10, 20, 90);
+
+      draw_segment(0, 0, mkcolor(255, 255, 255), 8, 225, mkcolor(255, 255, 255), WIDTH - 10 - i * 10, 20, 90);
+
+      draw_segment(8, 225, mkcolor(255, 255, 255), 16, 0, mkcolor(255, 255, 255), WIDTH - 10 - i * 10, 20, 90);
+    }
+
+    if (player_die_timer > 0)
+    {
+      size_t j = 0;
+
+      if (player_die_timer > 30)
+      {
+        j = 30;
+      }
+      else
+      {
+        j = player_die_timer;
+      }
+
+      draw_segment((16 * j) / 30, 0, mkcolor(255, 255, 255), (4 * j) / 30, 135, mkcolor(255, 255, 255), WIDTH - 10 - k * 10, 20, 90);
+
+      draw_segment((8 * j) / 30, 135, mkcolor(255, 255, 255), 0, 0, mkcolor(255, 255, 255), WIDTH - 10 - k * 10, 20, 90);
+
+      draw_segment(0, 0, mkcolor(255, 255, 255), (8 * j) / 30, 225, mkcolor(255, 255, 255), WIDTH - 10 - k * 10, 20, 90);
+
+      draw_segment((8 * j) / 30, 225, mkcolor(255, 255, 255), (16 * j) / 30, 0, mkcolor(255, 255, 255), WIDTH - 10 - k * 10, 20, 90);
+    }
+
+    /* Zooming level effect: */
+
+    if (text_zoom > 0)
+    {
+      if ((counter % 2) == 0)
+      {
+        text_zoom--;
+      }
+
+      draw_text(zoom_str, (WIDTH - (strlen(zoom_str) * text_zoom)) / 2, (HEIGHT - text_zoom) / 2, text_zoom, mkcolor(text_zoom * (256 / ZOOM_START), 0, 0));
+    }
+
+    /* Game over? */
+
+    if (player_alive == 0 && lives == 0)
+    {
+      if (player_die_timer > 14)
+      {
+        draw_text("GAME OVER",
+                  (WIDTH - 9 * player_die_timer) / 2,
+                  (HEIGHT - player_die_timer) / 2,
+                  player_die_timer,
+                  mkcolor(rand() % 255,
+                          rand() % 255,
+                          rand() % 255));
+      }
+      else
+      {
+        draw_text("GAME OVER",
+                  (WIDTH - 9 * 14) / 2,
+                  (HEIGHT - 14) / 2,
+                  14,
+                  mkcolor(255, 255, 255));
+      }
+    }
+
+    /* Go to next level? */
+
+    if (num_asteroids_alive == 0)
+    {
+      level++;
+
+      reset_level();
+    }
+
+    /* Flush and pause! */
+
+    SDL_RenderPresent(g_renderer);
+
+    now_time = SDL_GetTicks();
+
+    if (now_time < last_time + (1000 / FPS))
+    {
+      SDL_Delay(last_time + 1000 / FPS - now_time);
+    }
+  } while (!done);
 
   /* Record, if a high score: */
 
   if (score >= high)
-    {
-      high = score;
-    }
+  {
+    high = score;
+  }
 
   /* Display mouse cursor: */
 
   if (fullscreen)
-    {
-      SDL_ShowCursor(1);
-    }
+  {
+    SDL_ShowCursor(1);
+  }
 
   return (quit);
 }
@@ -1655,81 +1573,81 @@ setup(const int argc, const char* argv[])
   /* Check command-line options: */
 
   for (size_t i = 1; i < (size_t)argc; i++)
+  {
+    if (strcmp(argv[i], "--fullscreen") == 0 || strcmp(argv[i], "-f") == 0)
     {
-      if (strcmp(argv[i], "--fullscreen") == 0 || strcmp(argv[i], "-f") == 0)
-        {
-          fullscreen = true;
-        }
-      else if (strcmp(argv[i], "--nosound") == 0 || strcmp(argv[i], "-q") == 0)
-        {
-          use_sound = false;
-        }
-      else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
-        {
-          show_version();
-
-          printf("\n"
-                 "Programming: Bill Kendrick, New Breed Software - bill@newbreedsoftware.com\n"
-                 "Music:       Mike Faltiss (Hadji/Digital Music Kings) - deadchannel@hotmail.com\n"
-                 "\n"
-                 "Keyboard controls:\n"
-                 "  Left/Right - Rotate ship\n"
-                 "  Up         - Thrust engines\n"
-                 "  Space      - Fire weapons\n"
-                 "  Shift      - Respawn after death (or wait)\n"
-                 "  Escape     - Return to title screen\n"
-                 "\n"
-                 "Joystick controls:\n"
-                 "  Left/Right - Rotate ship\n"
-                 "  Fire-A     - Thrust engines\n"
-                 "  Fire-B     - Fire weapons\n"
-                 "\n"
-                 "Run with \"--usage\" for command-line options...\n"
-                 "Run with \"--copying\" for copying information...\n"
-                 "\n");
-
-          exit(0);
-        }
-      else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0)
-        {
-          show_version();
-          printf("State format file version " VER_DATE "\n");
-          exit(0);
-        }
-      else if (strcmp(argv[i], "--copying") == 0 || strcmp(argv[i], "-c") == 0)
-        {
-          show_version();
-          printf("\n"
-                 "This program is free software; you can redistribute it\n"
-                 "and/or modify it under the terms of the GNU General Public\n"
-                 "License as published by the Free Software Foundation;\n"
-                 "either version 2 of the License, or (at your option) any\n"
-                 "later version.\n"
-                 "\n"
-                 "This program is distributed in the hope that it will be\n"
-                 "useful and entertaining, but WITHOUT ANY WARRANTY; without\n"
-                 "even the implied warranty of MERCHANTABILITY or FITNESS\n"
-                 "FOR A PARTICULAR PURPOSE.  See the GNU General Public\n"
-                 "License for more details.\n"
-                 "\n");
-          printf("You should have received a copy of the GNU General Public\n"
-                 "License along with this program; if not, write to the Free\n"
-                 "Software Foundation, Inc., 59 Temple Place, Suite 330,\n"
-                 "Boston, MA  02111-1307  USA\n"
-                 "\n");
-          exit(0);
-        }
-      else if (strcmp(argv[i], "--usage") == 0 || strcmp(argv[i], "-u") == 0)
-        {
-          show_usage(stdout, argv[0]);
-          exit(0);
-        }
-      else
-        {
-          show_usage(stderr, argv[0]);
-          exit(1);
-        }
+      fullscreen = true;
     }
+    else if (strcmp(argv[i], "--nosound") == 0 || strcmp(argv[i], "-q") == 0)
+    {
+      use_sound = false;
+    }
+    else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
+    {
+      show_version();
+
+      printf("\n"
+             "Programming: Bill Kendrick, New Breed Software - bill@newbreedsoftware.com\n"
+             "Music:       Mike Faltiss (Hadji/Digital Music Kings) - deadchannel@hotmail.com\n"
+             "\n"
+             "Keyboard controls:\n"
+             "  Left/Right - Rotate ship\n"
+             "  Up         - Thrust engines\n"
+             "  Space      - Fire weapons\n"
+             "  Shift      - Respawn after death (or wait)\n"
+             "  Escape     - Return to title screen\n"
+             "\n"
+             "Joystick controls:\n"
+             "  Left/Right - Rotate ship\n"
+             "  Fire-A     - Thrust engines\n"
+             "  Fire-B     - Fire weapons\n"
+             "\n"
+             "Run with \"--usage\" for command-line options...\n"
+             "Run with \"--copying\" for copying information...\n"
+             "\n");
+
+      exit(0);
+    }
+    else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0)
+    {
+      show_version();
+      printf("State format file version " VER_DATE "\n");
+      exit(0);
+    }
+    else if (strcmp(argv[i], "--copying") == 0 || strcmp(argv[i], "-c") == 0)
+    {
+      show_version();
+      printf("\n"
+             "This program is free software; you can redistribute it\n"
+             "and/or modify it under the terms of the GNU General Public\n"
+             "License as published by the Free Software Foundation;\n"
+             "either version 2 of the License, or (at your option) any\n"
+             "later version.\n"
+             "\n"
+             "This program is distributed in the hope that it will be\n"
+             "useful and entertaining, but WITHOUT ANY WARRANTY; without\n"
+             "even the implied warranty of MERCHANTABILITY or FITNESS\n"
+             "FOR A PARTICULAR PURPOSE.  See the GNU General Public\n"
+             "License for more details.\n"
+             "\n");
+      printf("You should have received a copy of the GNU General Public\n"
+             "License along with this program; if not, write to the Free\n"
+             "Software Foundation, Inc., 59 Temple Place, Suite 330,\n"
+             "Boston, MA  02111-1307  USA\n"
+             "\n");
+      exit(0);
+    }
+    else if (strcmp(argv[i], "--usage") == 0 || strcmp(argv[i], "-u") == 0)
+    {
+      show_usage(stdout, argv[0]);
+      exit(0);
+    }
+    else
+    {
+      show_usage(stderr, argv[0]);
+      exit(1);
+    }
+  }
 
   /* Seed random number generator: */
 
@@ -1738,82 +1656,82 @@ setup(const int argc, const char* argv[])
   /* Init SDL video: */
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
-    {
-      fprintf(stderr,
-              "\nError: I could not initialize video!\n"
-              "The Simple DirectMedia error that occured was:\n"
-              "%s\n\n",
-              SDL_GetError());
-      exit(1);
-    }
+  {
+    fprintf(stderr,
+            "\nError: I could not initialize video!\n"
+            "The Simple DirectMedia error that occured was:\n"
+            "%s\n\n",
+            SDL_GetError());
+    exit(1);
+  }
 
-    /* Init joysticks: */
+  /* Init joysticks: */
 
 #ifdef JOY_YES
   use_joystick = true;
 
   if (SDL_Init(SDL_INIT_JOYSTICK) < 0)
+  {
+    fprintf(stderr,
+            "\nWarning: I could not initialize joystick.\n"
+            "The Simple DirectMedia error that occured was:\n"
+            "%s\n\n",
+            SDL_GetError());
+
+    use_joystick = false;
+  }
+  else
+  {
+    /* Look for joysticks: */
+
+    if (SDL_NumJoysticks() <= 0)
     {
       fprintf(stderr,
-              "\nWarning: I could not initialize joystick.\n"
-              "The Simple DirectMedia error that occured was:\n"
-              "%s\n\n",
-              SDL_GetError());
+              "\nWarning: No joysticks available.\n");
 
       use_joystick = false;
     }
-  else
+    else
     {
-      /* Look for joysticks: */
+      /* Open joystick: */
 
-      if (SDL_NumJoysticks() <= 0)
+      js = SDL_JoystickOpen(0);
+
+      if (!js)
+      {
+        fprintf(stderr,
+                "\nWarning: Could not open joystick 1.\n"
+                "The Simple DirectMedia error that occured was:\n"
+                "%s\n\n",
+                SDL_GetError());
+
+        use_joystick = false;
+      }
+      else
+      {
+        /* Check for proper stick configuration: */
+
+        if (SDL_JoystickNumAxes(js) < 2)
         {
           fprintf(stderr,
-                  "\nWarning: No joysticks available.\n");
+                  "\nWarning: Joystick doesn't have enough axes!\n");
 
           use_joystick = false;
         }
-      else
+        else
         {
-          /* Open joystick: */
+          if (SDL_JoystickNumButtons(js) < 2)
+          {
+            fprintf(stderr,
+                    "\nWarning: Joystick doesn't have enough "
+                    "buttons!\n");
 
-          js = SDL_JoystickOpen(0);
-
-          if (!js)
-            {
-              fprintf(stderr,
-                      "\nWarning: Could not open joystick 1.\n"
-                      "The Simple DirectMedia error that occured was:\n"
-                      "%s\n\n",
-                      SDL_GetError());
-
-              use_joystick = false;
-            }
-          else
-            {
-              /* Check for proper stick configuration: */
-
-              if (SDL_JoystickNumAxes(js) < 2)
-                {
-                  fprintf(stderr,
-                          "\nWarning: Joystick doesn't have enough axes!\n");
-
-                  use_joystick = false;
-                }
-              else
-                {
-                  if (SDL_JoystickNumButtons(js) < 2)
-                    {
-                      fprintf(stderr,
-                              "\nWarning: Joystick doesn't have enough "
-                              "buttons!\n");
-
-                      use_joystick = false;
-                    }
-                }
-            }
+            use_joystick = false;
+          }
         }
+      }
     }
+  }
 #else
   use_joystick = false;
 #endif
@@ -1823,86 +1741,88 @@ setup(const int argc, const char* argv[])
   g_window = SDL_CreateWindow(GAME_NAME " v" VER_VERSION, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
   if (!g_window)
-    {
-      fprintf(stderr, "Window creation error: %s\n", SDL_GetError());
-      SDL_Quit();
-      exit(EXIT_FAILURE);
-    }
+  {
+    fprintf(stderr, "Window creation error: %s\n", SDL_GetError());
+    SDL_Quit();
+    exit(EXIT_FAILURE);
+  }
 
   SDL_SetWindowFullscreen(g_window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 
   g_renderer = SDL_CreateRenderer(g_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   if (!g_renderer)
-    {
-      fprintf(stderr, "Renderer creation error; %s\n", SDL_GetError());
-      SDL_DestroyWindow(g_window);
-      SDL_Quit();
-      exit(EXIT_FAILURE);
-    }
+  {
+    fprintf(stderr, "Renderer creation error; %s\n", SDL_GetError());
+    SDL_DestroyWindow(g_window);
+    SDL_Quit();
+    exit(EXIT_FAILURE);
+  }
 
   /* Load background image: */
 
   g_texture = IMG_LoadTexture(g_renderer, DATA_PREFIX "images/redspot.jpg");
 
   if (!g_texture)
-    {
-      fprintf(stderr,
-              "\nError: I could not open the background image:\n" DATA_PREFIX "images/redspot.jpg\n"
-              "The Simple DirectMedia error that occured was:\n"
-              "%s\n\n",
-              SDL_GetError());
-      exit(1);
-    }
+  {
+    fprintf(stderr,
+            "\nError: I could not open the background image:\n" DATA_PREFIX "images/redspot.jpg\n"
+            "The Simple DirectMedia error that occured was:\n"
+            "%s\n\n",
+            SDL_GetError());
+    exit(1);
+  }
 
   SDL_RenderSetLogicalSize(g_renderer, WIDTH, HEIGHT);
 
   /* Init sound: */
 
   if (use_sound)
+  {
+    if (Mix_OpenAudio(22050, AUDIO_S16, 2, 512) < 0)
     {
-      if (Mix_OpenAudio(22050, AUDIO_S16, 2, 512) < 0)
-        {
-          fprintf(stderr,
-                  "\nWarning: I could not set up audio for 22050 Hz "
-                  "16-bit stereo.\n"
-                  "The Simple DirectMedia error that occured was:\n"
-                  "%s\n\n",
-                  SDL_GetError());
-          use_sound = false;
-        }
+      fprintf(stderr,
+              "\nWarning: I could not set up audio for 22050 Hz "
+              "16-bit stereo.\n"
+              "The Simple DirectMedia error that occured was:\n"
+              "%s\n\n",
+              SDL_GetError());
+      use_sound = false;
     }
+  }
 
   /* Load sound files: */
 
   if (use_sound)
+  {
+    for (size_t i = 0; i < NUM_SOUNDS; i++)
     {
-      for (size_t i = 0; i < NUM_SOUNDS; i++)
-        {
-          sounds[i] = Mix_LoadWAV(sound_names[i]);
-          if (!sounds[i])
-            {
-              fprintf(stderr,
-                      "\nError: I could not load the sound file:\n"
-                      "%s\n"
-                      "The Simple DirectMedia error that occured was:\n"
-                      "%s\n\n",
-                      sound_names[i], SDL_GetError());
-              exit(1);
-            }
-        }
-
-      game_music = Mix_LoadMUS(mus_game_name);
-      if (!game_music)
-        {
-          fprintf(stderr,
-                  "\nError: I could not load the music file:\n"
-                  "%s\n"
-                  "The Simple DirectMedia error that occured was:\n"
-                  "%s\n\n",
-                  mus_game_name, SDL_GetError());
-          exit(1);
-        }
+      sounds[i] = Mix_LoadWAV(sound_names[i]);
+      if (!sounds[i])
+      {
+        fprintf(stderr,
+                "\nError: I could not load the sound file:\n"
+                "%s\n"
+                "The Simple DirectMedia error that occured was:\n"
+                "%s\n\n",
+                sound_names[i],
+                SDL_GetError());
+        exit(1);
+      }
     }
+
+    game_music = Mix_LoadMUS(mus_game_name);
+    if (!game_music)
+    {
+      fprintf(stderr,
+              "\nError: I could not load the music file:\n"
+              "%s\n"
+              "The Simple DirectMedia error that occured was:\n"
+              "%s\n\n",
+              mus_game_name,
+              SDL_GetError());
+      exit(1);
+    }
+  }
 }
 
 /* Fast approximate-integer, table-based cosine! Whee! */
@@ -1913,21 +1833,21 @@ fast_cos(int32_t angle)
   angle = (angle % 45);
 
   if (angle < 12)
-    {
-      return (trig[angle]);
-    }
+  {
+    return (trig[angle]);
+  }
   else if (angle < 23)
-    {
-      return (-trig[10 - (angle - 12)]);
-    }
+  {
+    return (-trig[10 - (angle - 12)]);
+  }
   else if (angle < 34)
-    {
-      return (-trig[angle - 22]);
-    }
+  {
+    return (-trig[angle - 22]);
+  }
   else
-    {
-      return (trig[45 - angle]);
-    }
+  {
+    return (trig[45 - angle]);
+  }
 }
 
 /* Sine based on fast cosine... */
@@ -1941,28 +1861,27 @@ fast_sin(int32_t angle)
 /* Draw a line: */
 
 void
-draw_line(int32_t x1, int32_t y1, color_type c1,
-          int32_t x2, int32_t y2, color_type c2)
+draw_line(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2)
 {
   sdl_drawline(x1, y1, c1, x2, y2, c2);
 
   if (x1 < 0 || x2 < 0)
-    {
-      sdl_drawline(x1 + WIDTH, y1, c1, x2 + WIDTH, y2, c2);
-    }
+  {
+    sdl_drawline(x1 + WIDTH, y1, c1, x2 + WIDTH, y2, c2);
+  }
   else if (x1 >= WIDTH || x2 >= WIDTH)
-    {
-      sdl_drawline(x1 - WIDTH, y1, c1, x2 - WIDTH, y2, c2);
-    }
+  {
+    sdl_drawline(x1 - WIDTH, y1, c1, x2 - WIDTH, y2, c2);
+  }
 
   if (y1 < 0 || y2 < 0)
-    {
-      sdl_drawline(x1, y1 + HEIGHT, c1, x2, y2 + HEIGHT, c2);
-    }
+  {
+    sdl_drawline(x1, y1 + HEIGHT, c1, x2, y2 + HEIGHT, c2);
+  }
   else if (y1 >= HEIGHT || y2 >= HEIGHT)
-    {
-      sdl_drawline(x1, y1 - HEIGHT, c1, x2, y2 - HEIGHT, c2);
-    }
+  {
+    sdl_drawline(x1, y1 - HEIGHT, c1, x2, y2 - HEIGHT, c2);
+  }
 }
 
 /* Create a color_type struct out of RGB values: */
@@ -1973,17 +1892,17 @@ mkcolor(int32_t r, int32_t g, int32_t b)
   color_type c;
 
   if (r > 255)
-    {
-      r = 255;
-    }
+  {
+    r = 255;
+  }
   if (g > 255)
-    {
-      g = 255;
-    }
+  {
+    g = 255;
+  }
   if (b > 255)
-    {
-      b = 255;
-    }
+  {
+    b = 255;
+  }
 
   c.r = (uint8_t)r;
   c.g = (uint8_t)g;
@@ -1995,60 +1914,58 @@ mkcolor(int32_t r, int32_t g, int32_t b)
 /* Draw a line on an SDL surface: */
 
 void
-sdl_drawline(int32_t x1, int32_t y1, color_type c1,
-             int32_t x2, int32_t y2, color_type c2)
+sdl_drawline(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2)
 {
   int32_t dx = 0, dy = 0;
   double cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
   double m = NAN, b = NAN;
 
   if (clip(&x1, &y1, &x2, &y2))
+  {
+    dx = x2 - x1;
+    dy = y2 - y1;
+
+    if (dx != 0)
     {
-      dx = x2 - x1;
-      dy = y2 - y1;
+      m = ((double)dy) / ((double)dx);
+      b = y1 - m * x1;
 
-      if (dx != 0)
-        {
-          m = ((double)dy) / ((double)dx);
-          b = y1 - m * x1;
-
-          if (x2 >= x1)
-            {
-              dx = 1;
-            }
-          else
-            {
-              dx = -1;
-            }
-
-          cr = c1.r;
-          cg = c1.g;
-          cb = c1.b;
-
-          rd = (double)(c2.r - c1.r) / (double)(x2 - x1) * dx;
-          gd = (double)(c2.g - c1.g) / (double)(x2 - x1) * dx;
-          bd = (double)(c2.b - c1.b) / (double)(x2 - x1) * dx;
-
-          while (x1 != x2)
-            {
-              y1 = m * x1 + b;
-              y2 = m * (x1 + dx) + b;
-
-              drawvertline(x1, y1, mkcolor(cr, cg, cb),
-                           y2, mkcolor(cr + rd, cg + gd, cb + bd));
-
-              x1 = x1 + dx;
-
-              cr = cr + rd;
-              cg = cg + gd;
-              cb = cb + bd;
-            }
-        }
+      if (x2 >= x1)
+      {
+        dx = 1;
+      }
       else
-        {
-          drawvertline(x1, y1, c1, y2, c2);
-        }
+      {
+        dx = -1;
+      }
+
+      cr = c1.r;
+      cg = c1.g;
+      cb = c1.b;
+
+      rd = (double)(c2.r - c1.r) / (double)(x2 - x1) * dx;
+      gd = (double)(c2.g - c1.g) / (double)(x2 - x1) * dx;
+      bd = (double)(c2.b - c1.b) / (double)(x2 - x1) * dx;
+
+      while (x1 != x2)
+      {
+        y1 = m * x1 + b;
+        y2 = m * (x1 + dx) + b;
+
+        drawvertline(x1, y1, mkcolor(cr, cg, cb), y2, mkcolor(cr + rd, cg + gd, cb + bd));
+
+        x1 = x1 + dx;
+
+        cr = cr + rd;
+        cg = cg + gd;
+        cb = cb + bd;
+      }
     }
+    else
+    {
+      drawvertline(x1, y1, c1, y2, c2);
+    }
+  }
 }
 
 /* Clip lines to window: */
@@ -2072,85 +1989,85 @@ clip(int32_t* x1, int32_t* y1, int32_t* x2, int32_t* y2)
   swapped = false;
 
   while (!done)
+  {
+    code1 = encode(fx1, fy1);
+    code2 = encode(fx2, fy2);
+
+    if (!(code1 | code2))
     {
-      code1 = encode(fx1, fy1);
-      code2 = encode(fx2, fy2);
-
-      if (!(code1 | code2))
-        {
-          done = true;
-          draw = true;
-        }
-      else if (code1 & code2)
-        {
-          done = true;
-        }
-      else
-        {
-          if (!code1)
-            {
-              swapped = true;
-              tmp = fx1;
-              fx1 = fx2;
-              fx2 = tmp;
-
-              tmp = fy1;
-              fy1 = fy2;
-              fy2 = tmp;
-
-              ctmp = code1;
-              code1 = code2;
-              code2 = ctmp;
-            }
-
-          if (fx2 != fx1)
-            {
-              m = (fy2 - fy1) / (fx2 - fx1);
-            }
-          else
-            {
-              m = 1;
-            }
-
-          if (code1 & LEFT_EDGE)
-            {
-              fy1 += ((0 - (fx1)) * m);
-              fx1 = 0;
-            }
-          else if (code1 & RIGHT_EDGE)
-            {
-              fy1 += (((WIDTH - 1) - (fx1)) * m);
-              fx1 = (WIDTH - 1);
-            }
-          else if (code1 & TOP_EDGE)
-            {
-              if (fx2 != fx1)
-                {
-                  fx1 += ((0 - (fy1)) / m);
-                }
-              fy1 = 0;
-            }
-          else if (code1 & BOTTOM_EDGE)
-            {
-              if (fx2 != fx1)
-                {
-                  fx1 += (((HEIGHT - 1) - (fy1)) / m);
-                }
-              fy1 = (HEIGHT - 1);
-            }
-        }
+      done = true;
+      draw = true;
     }
+    else if (code1 & code2)
+    {
+      done = true;
+    }
+    else
+    {
+      if (!code1)
+      {
+        swapped = true;
+        tmp = fx1;
+        fx1 = fx2;
+        fx2 = tmp;
+
+        tmp = fy1;
+        fy1 = fy2;
+        fy2 = tmp;
+
+        ctmp = code1;
+        code1 = code2;
+        code2 = ctmp;
+      }
+
+      if (fx2 != fx1)
+      {
+        m = (fy2 - fy1) / (fx2 - fx1);
+      }
+      else
+      {
+        m = 1;
+      }
+
+      if (code1 & LEFT_EDGE)
+      {
+        fy1 += ((0 - (fx1)) * m);
+        fx1 = 0;
+      }
+      else if (code1 & RIGHT_EDGE)
+      {
+        fy1 += (((WIDTH - 1) - (fx1)) * m);
+        fx1 = (WIDTH - 1);
+      }
+      else if (code1 & TOP_EDGE)
+      {
+        if (fx2 != fx1)
+        {
+          fx1 += ((0 - (fy1)) / m);
+        }
+        fy1 = 0;
+      }
+      else if (code1 & BOTTOM_EDGE)
+      {
+        if (fx2 != fx1)
+        {
+          fx1 += (((HEIGHT - 1) - (fy1)) / m);
+        }
+        fy1 = (HEIGHT - 1);
+      }
+    }
+  }
 
   if (swapped)
-    {
-      tmp = fx1;
-      fx1 = fx2;
-      fx2 = tmp;
+  {
+    tmp = fx1;
+    fx1 = fx2;
+    fx2 = tmp;
 
-      tmp = fy1;
-      fy1 = fy2;
-      fy2 = tmp;
-    }
+    tmp = fy1;
+    fy1 = fy2;
+    fy2 = tmp;
+  }
 
   *x1 = (int32_t)fx1;
   *y1 = (int32_t)fy1;
@@ -2170,22 +2087,22 @@ encode(double x, double y)
   code = 0x00;
 
   if (x < 0.0)
-    {
-      code = code | LEFT_EDGE;
-    }
+  {
+    code = code | LEFT_EDGE;
+  }
   else if (x >= (double)WIDTH)
-    {
-      code = code | RIGHT_EDGE;
-    }
+  {
+    code = code | RIGHT_EDGE;
+  }
 
   if (y < 0.0)
-    {
-      code = code | TOP_EDGE;
-    }
+  {
+    code = code | TOP_EDGE;
+  }
   else if (y >= (double)HEIGHT)
-    {
-      code = code | BOTTOM_EDGE;
-    }
+  {
+    code = code | BOTTOM_EDGE;
+  }
 
   return code;
 }
@@ -2193,58 +2110,57 @@ encode(double x, double y)
 /* Draw a verticle line: */
 
 void
-drawvertline(int32_t x, int32_t y1, color_type c1,
-             int32_t y2, color_type c2)
+drawvertline(int32_t x, int32_t y1, color_type c1, int32_t y2, color_type c2)
 {
   int32_t tmp = 0, dy = 0;
   double cr = NAN, cg = NAN, cb = NAN, rd = NAN, gd = NAN, bd = NAN;
 
   if (y1 > y2)
-    {
-      tmp = y1;
-      y1 = y2;
-      y2 = tmp;
+  {
+    tmp = y1;
+    y1 = y2;
+    y2 = tmp;
 
-      tmp = c1.r;
-      c1.r = c2.r;
-      c2.r = tmp;
+    tmp = c1.r;
+    c1.r = c2.r;
+    c2.r = tmp;
 
-      tmp = c1.g;
-      c1.g = c2.g;
-      c2.g = tmp;
+    tmp = c1.g;
+    c1.g = c2.g;
+    c2.g = tmp;
 
-      tmp = c1.b;
-      c1.b = c2.b;
-      c2.b = tmp;
-    }
+    tmp = c1.b;
+    c1.b = c2.b;
+    c2.b = tmp;
+  }
 
   cr = c1.r;
   cg = c1.g;
   cb = c1.b;
 
   if (y1 != y2)
-    {
-      rd = (double)(c2.r - c1.r) / (double)(y2 - y1);
-      gd = (double)(c2.g - c1.g) / (double)(y2 - y1);
-      bd = (double)(c2.b - c1.b) / (double)(y2 - y1);
-    }
+  {
+    rd = (double)(c2.r - c1.r) / (double)(y2 - y1);
+    gd = (double)(c2.g - c1.g) / (double)(y2 - y1);
+    bd = (double)(c2.b - c1.b) / (double)(y2 - y1);
+  }
   else
-    {
-      rd = 0;
-      gd = 0;
-      bd = 0;
-    }
+  {
+    rd = 0;
+    gd = 0;
+    bd = 0;
+  }
 
   for (dy = y1; dy <= y2; dy++)
-    {
-      putpixel(x + 1, dy + 1, (color_type){.r = 0, .g = 0, .b = 0});
+  {
+    putpixel(x + 1, dy + 1, (color_type){.r = 0, .g = 0, .b = 0});
 
-      putpixel(x, dy, (color_type){.r = (uint8_t)cr, .g = (uint8_t)cg, .b = (uint8_t)cb});
+    putpixel(x, dy, (color_type){.r = (uint8_t)cr, .g = (uint8_t)cg, .b = (uint8_t)cb});
 
-      cr = cr + rd;
-      cg = cg + gd;
-      cb = cb + bd;
-    }
+    cr = cr + rd;
+    cg = cg + gd;
+    cb = cb + bd;
+  }
 }
 
 /* Draw a single pixel into the surface: */
@@ -2260,9 +2176,9 @@ putpixel(int32_t x, int32_t y, color_type color)
   /* Assuming the X/Y values are within the bounds of this surface... */
 
   if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT)
-    {
-      SDL_SetRenderDrawColor(g_renderer, color.r, color.g, color.b, 255);
-      SDL_RenderDrawPoint(g_renderer, x, y);
+  {
+    SDL_SetRenderDrawColor(g_renderer, color.r, color.g, color.b, 255);
+    SDL_RenderDrawPoint(g_renderer, x, y);
 #if 0
       /* Determine bytes-per-pixel for the surface in question: */
 
@@ -2306,17 +2222,13 @@ putpixel(int32_t x, int32_t y, color_type color)
           *(uint32_t*)p = pixel;
         }
 #endif
-    }
+  }
 }
 
 /* Draw a line segment, rotated around a center point: */
 
 void
-draw_segment(int32_t r1, int32_t a1,
-             color_type c1,
-             int32_t r2, int32_t a2,
-             color_type c2,
-             int32_t cx, int32_t cy, int32_t a)
+draw_segment(int32_t r1, int32_t a1, color_type c1, int32_t r2, int32_t a2, color_type c2, int32_t cx, int32_t cy, int32_t a)
 {
   draw_line(((fast_cos((a1 + a) >> 3) * r1) >> 10) + cx,
             cy - ((fast_sin((a1 + a) >> 3) * r1) >> 10),
@@ -2336,25 +2248,25 @@ add_bullet(int32_t x, int32_t y, int32_t a, int32_t xm, int32_t ym)
   found = -1;
 
   for (size_t i = 0; i < NUM_BULLETS && found == -1; i++)
+  {
+    if (bullets[i].timer <= 0)
     {
-      if (bullets[i].timer <= 0)
-        {
-          found = i;
-        }
+      found = i;
     }
+  }
 
   if (found != -1)
-    {
-      bullets[found].timer = 50;
+  {
+    bullets[found].timer = 50;
 
-      bullets[found].x = x;
-      bullets[found].y = y;
+    bullets[found].x = x;
+    bullets[found].y = y;
 
-      bullets[found].xm = ((fast_cos(a >> 3) * 5) >> 10) + (xm >> 4);
-      bullets[found].ym = -((fast_sin(a >> 3) * 5) >> 10) + (ym >> 4);
+    bullets[found].xm = ((fast_cos(a >> 3) * 5) >> 10) + (xm >> 4);
+    bullets[found].ym = -((fast_sin(a >> 3) * 5) >> 10) + (ym >> 4);
 
-      playsound(SND_BULLET);
-    }
+    playsound(SND_BULLET);
+  }
 }
 
 /* Add an asteroid: */
@@ -2369,40 +2281,40 @@ add_asteroid(int32_t x, int32_t y, int32_t xm, int32_t ym, int32_t size)
   found = -1;
 
   for (size_t i = 0; i < NUM_ASTEROIDS && found == -1; i++)
+  {
+    if (asteroids[i].alive == 0)
     {
-      if (asteroids[i].alive == 0)
-        {
-          found = i;
-        }
+      found = i;
     }
+  }
 
   /* Hack: No asteroids should be stationary! */
 
   while (xm == 0)
-    {
-      xm = (rand() % 3) - 1;
-    }
+  {
+    xm = (rand() % 3) - 1;
+  }
 
   if (found != -1)
+  {
+    asteroids[found].alive = 1;
+
+    asteroids[found].x = x;
+    asteroids[found].y = y;
+    asteroids[found].xm = xm;
+    asteroids[found].ym = ym;
+
+    asteroids[found].angle = (rand() % 360);
+    asteroids[found].angle_m = (rand() % 6) - 3;
+
+    asteroids[found].size = size;
+
+    for (size_t i = 0; i < AST_SIDES; i++)
     {
-      asteroids[found].alive = 1;
-
-      asteroids[found].x = x;
-      asteroids[found].y = y;
-      asteroids[found].xm = xm;
-      asteroids[found].ym = ym;
-
-      asteroids[found].angle = (rand() % 360);
-      asteroids[found].angle_m = (rand() % 6) - 3;
-
-      asteroids[found].size = size;
-
-      for (size_t i = 0; i < AST_SIDES; i++)
-        {
-          asteroids[found].shape[i].radius = (rand() % 3);
-          asteroids[found].shape[i].angle = i * 60 + (rand() % 40);
-        }
+      asteroids[found].shape[i].radius = (rand() % 3);
+      asteroids[found].shape[i].angle = i * 60 + (rand() % 40);
     }
+  }
 }
 
 /* Add a bit: */
@@ -2415,22 +2327,22 @@ add_bit(int32_t x, int32_t y, int32_t xm, int32_t ym)
   found = -1;
 
   for (size_t i = 0; i < NUM_BITS && found == -1; i++)
+  {
+    if (bits[i].timer <= 0)
     {
-      if (bits[i].timer <= 0)
-        {
-          found = i;
-        }
+      found = i;
     }
+  }
 
   if (found != -1)
-    {
-      bits[found].timer = 16;
+  {
+    bits[found].timer = 16;
 
-      bits[found].x = x;
-      bits[found].y = y;
-      bits[found].xm = xm;
-      bits[found].ym = ym;
-    }
+    bits[found].x = x;
+    bits[found].y = y;
+    bits[found].xm = xm;
+    bits[found].ym = ym;
+  }
 }
 
 /* Draw an asteroid: */
@@ -2444,26 +2356,32 @@ draw_asteroid(int32_t size, int32_t x, int32_t y, int32_t angle, shape_type* sha
   div = 240;
 
   for (size_t i = 0; i < AST_SIDES - 1; i++)
-    {
-      b1 = (((shape[i].angle + angle) % 180) * 255) / div;
-      b2 = (((shape[i + 1].angle + angle) % 180) * 255) / div;
+  {
+    b1 = (((shape[i].angle + angle) % 180) * 255) / div;
+    b2 = (((shape[i + 1].angle + angle) % 180) * 255) / div;
 
-      draw_segment((size * (AST_RADIUS - shape[i].radius)),
-                   shape[i].angle, mkcolor(b1, b1, b1),
-                   (size * (AST_RADIUS - shape[i + 1].radius)),
-                   shape[i + 1].angle, mkcolor(b2, b2, b2),
-                   x, y,
-                   angle);
-    }
+    draw_segment((size * (AST_RADIUS - shape[i].radius)),
+                 shape[i].angle,
+                 mkcolor(b1, b1, b1),
+                 (size * (AST_RADIUS - shape[i + 1].radius)),
+                 shape[i + 1].angle,
+                 mkcolor(b2, b2, b2),
+                 x,
+                 y,
+                 angle);
+  }
 
   b1 = (((shape[AST_SIDES - 1].angle + angle) % 180) * 255) / div;
   b2 = (((shape[0].angle + angle) % 180) * 255) / div;
 
   draw_segment((size * (AST_RADIUS - shape[AST_SIDES - 1].radius)),
-               shape[AST_SIDES - 1].angle, mkcolor(b1, b1, b1),
+               shape[AST_SIDES - 1].angle,
+               mkcolor(b1, b1, b1),
                (size * (AST_RADIUS - shape[0].radius)),
-               shape[0].angle, mkcolor(b2, b2, b2),
-               x, y,
+               shape[0].angle,
+               mkcolor(b2, b2, b2),
+               x,
+               y,
                angle);
 }
 
@@ -2475,18 +2393,18 @@ playsound(int32_t snd)
   int32_t which = 0;
 
   if (use_sound)
+  {
+    which = (rand() % 3) + CHAN_THRUST;
+    for (size_t i = CHAN_THRUST; i < 4; i++)
     {
-      which = (rand() % 3) + CHAN_THRUST;
-      for (size_t i = CHAN_THRUST; i < 4; i++)
-        {
-          if (!Mix_Playing(i))
-            {
-              which = i;
-            }
-        }
-
-      Mix_PlayChannel(which, sounds[snd], 0);
+      if (!Mix_Playing(i))
+      {
+        which = i;
+      }
     }
+
+    Mix_PlayChannel(which, sounds[snd], 0);
+  }
 }
 
 /* Break an asteroid and add an explosion: */
@@ -2497,21 +2415,21 @@ hurt_asteroid(int32_t j, int32_t xm, int32_t ym, size_t exp_size)
   add_score(100 / (asteroids[j].size + 1));
 
   if (asteroids[j].size > 1)
-    {
-      /* Break the rock into two smaller ones! */
+  {
+    /* Break the rock into two smaller ones! */
 
-      add_asteroid(asteroids[j].x,
-                   asteroids[j].y,
-                   ((asteroids[j].xm + xm) / 2),
-                   (asteroids[j].ym + ym),
-                   asteroids[j].size - 1);
+    add_asteroid(asteroids[j].x,
+                 asteroids[j].y,
+                 ((asteroids[j].xm + xm) / 2),
+                 (asteroids[j].ym + ym),
+                 asteroids[j].size - 1);
 
-      add_asteroid(asteroids[j].x,
-                   asteroids[j].y,
-                   (asteroids[j].xm + xm),
-                   ((asteroids[j].ym + ym) / 2),
-                   asteroids[j].size - 1);
-    }
+    add_asteroid(asteroids[j].x,
+                 asteroids[j].y,
+                 (asteroids[j].xm + xm),
+                 ((asteroids[j].ym + ym) / 2),
+                 asteroids[j].size - 1);
+  }
 
   /* Make the original go away: */
 
@@ -2522,12 +2440,12 @@ hurt_asteroid(int32_t j, int32_t xm, int32_t ym, size_t exp_size)
   playsound(SND_AST1 + (asteroids[j].size) - 1);
 
   for (size_t k = 0; k < exp_size; k++)
-    {
-      add_bit((asteroids[j].x - (asteroids[j].size * AST_RADIUS) + (rand() % (AST_RADIUS * 2))),
-              (asteroids[j].y - (asteroids[j].size * AST_RADIUS) + (rand() % (AST_RADIUS * 2))),
-              ((rand() % (asteroids[j].size * 3)) - (asteroids[j].size) + ((xm + asteroids[j].xm) / 3)),
-              ((rand() % (asteroids[j].size * 3)) - (asteroids[j].size) + ((ym + asteroids[j].ym) / 3)));
-    }
+  {
+    add_bit((asteroids[j].x - (asteroids[j].size * AST_RADIUS) + (rand() % (AST_RADIUS * 2))),
+            (asteroids[j].y - (asteroids[j].size * AST_RADIUS) + (rand() % (AST_RADIUS * 2))),
+            ((rand() % (asteroids[j].size * 3)) - (asteroids[j].size) + ((xm + asteroids[j].xm) / 3)),
+            ((rand() % (asteroids[j].size * 3)) - (asteroids[j].size) + ((ym + asteroids[j].ym) / 3)));
+  }
 }
 
 /* Increment score: */
@@ -2538,12 +2456,12 @@ add_score(int32_t amount)
   /* See if they deserve a new life: */
 
   if (score / ONEUP_SCORE < (score + amount) / ONEUP_SCORE)
-    {
-      lives++;
-      strcpy(zoom_str, "EXTRA LIFE");
-      text_zoom = ZOOM_START;
-      playsound(SND_EXTRALIFE);
-    }
+  {
+    lives++;
+    strcpy(zoom_str, "EXTRA LIFE");
+    text_zoom = ZOOM_START;
+    playsound(SND_EXTRALIFE);
+  }
 
   /* Add to score: */
 
@@ -2561,43 +2479,42 @@ draw_char(char c, int32_t x, int32_t y, int32_t r, color_type cl)
 
   v = -1;
   if (c >= '0' && c <= '9')
-    {
-      v = (c - '0');
-    }
+  {
+    v = (c - '0');
+  }
   else if (c >= 'A' && c <= 'Z')
-    {
-      v = (c - 'A') + 10;
-    }
+  {
+    v = (c - 'A') + 10;
+  }
 
   if (v != -1)
+  {
+    for (size_t i = 0; i < 5; i++)
     {
-      for (size_t i = 0; i < 5; i++)
-        {
-          if (char_vectors[v][i][0] != -1)
-            {
-              draw_line(x + (char_vectors[v][i][0] * r),
-                        y + (char_vectors[v][i][1] * r),
-                        cl,
-                        x + (char_vectors[v][i][2] * r),
-                        y + (char_vectors[v][i][3] * r),
-                        cl);
-            }
-        }
+      if (char_vectors[v][i][0] != -1)
+      {
+        draw_line(x + (char_vectors[v][i][0] * r),
+                  y + (char_vectors[v][i][1] * r),
+                  cl,
+                  x + (char_vectors[v][i][2] * r),
+                  y + (char_vectors[v][i][3] * r),
+                  cl);
+      }
     }
+  }
 }
 
 void
 draw_text(char* str, int32_t x, int32_t y, int32_t s, color_type c)
 {
   for (size_t i = 0; i < strlen(str); i++)
-    {
-      draw_char(str[i], i * (s + 3) + x, y, s, c);
-    }
+  {
+    draw_char(str[i], i * (s + 3) + x, y, s, c);
+  }
 }
 
 void
-draw_thick_line(int32_t x1, int32_t y1, color_type c1,
-                int32_t x2, int32_t y2, color_type c2)
+draw_thick_line(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_type c2)
 {
   draw_line(x1, y1, c1, x2, y2, c2);
   draw_line(x1 + 1, y1 + 1, c1, x2 + 1, y2 + 1, c2);
@@ -2607,28 +2524,28 @@ void
 reset_level(void)
 {
   for (size_t i = 0; i < NUM_BULLETS; i++)
-    {
-      bullets[i].timer = 0;
-    }
+  {
+    bullets[i].timer = 0;
+  }
 
   for (size_t i = 0; i < NUM_ASTEROIDS; i++)
-    {
-      asteroids[i].alive = 0;
-    }
+  {
+    asteroids[i].alive = 0;
+  }
 
   for (size_t i = 0; i < NUM_BITS; i++)
-    {
-      bits[i].timer = 0;
-    }
+  {
+    bits[i].timer = 0;
+  }
 
   for (size_t i = 0; i < (level + 1) && i < 10; i++)
-    {
-      add_asteroid(/* x */ (rand() % 40) + ((WIDTH - 40) * (rand() % 2)),
-                   /* y */ (rand() % HEIGHT),
-                   /* xm */ (rand() % 9) - 4,
-                   /* ym */ ((rand() % 9) - 4) * 4,
-                   /* size */ (rand() % 3) + 2);
-    }
+  {
+    add_asteroid(/* x */ (rand() % 40) + ((WIDTH - 40) * (rand() % 2)),
+                 /* y */ (rand() % HEIGHT),
+                 /* xm */ (rand() % 9) - 4,
+                 /* ym */ ((rand() % 9) - 4) * 4,
+                 /* size */ (rand() % 3) + 2);
+  }
 
   sprintf(zoom_str, "LEVEL %ld", level);
 
@@ -2650,7 +2567,8 @@ show_usage(FILE* f, const char* prg)
 {
   fprintf(f, "Usage: %s {--help | --usage | --version | --copying }\n"
              "       %s [--fullscreen] [--nosound]\n\n",
-          prg, prg);
+          prg,
+          prg);
 }
 
 /* Draw text, centered horizontally: */
