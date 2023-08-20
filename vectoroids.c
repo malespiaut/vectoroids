@@ -475,7 +475,9 @@ void reset_level(void);
 void show_version(void);
 void show_usage(FILE* f, const char* prg);
 void draw_centered_text(char* str, int32_t y, int32_t s, color_type c);
+const char* user_file_path_get(const char* file_name);
 
+/* File manipulation */
 
 const char*
 user_file_path_get(const char* file_name)
@@ -486,8 +488,6 @@ user_file_path_get(const char* file_name)
   SDL_snprintf(path, sizeof(path), "%s%s", user_dir, file_name);
   return path;
 }
-
-
 
 /* --- MAIN --- */
 
