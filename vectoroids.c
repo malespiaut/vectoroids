@@ -26,13 +26,13 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <SDL_mixer.h>
 
 #ifndef DATA_PREFIX
 #define DATA_PREFIX "data/"
@@ -519,7 +519,8 @@ main(const int argc, const char* argv[])
       if (strcmp(buf, VER_DATE) != 0)
         {
           fprintf(stderr, "%s state file format has been updated.\n"
-                          "Old game state is unreadable.  Sorry!\n", GAME_NAME);
+                          "Old game state is unreadable.  Sorry!\n",
+                  GAME_NAME);
         }
       else
         {
@@ -912,7 +913,7 @@ game(void)
       SDL_ShowCursor(0);
     }
 
-    /* Play music: */
+  /* Play music: */
 
   if (use_sound)
     {
@@ -1108,7 +1109,7 @@ game(void)
               player_ym = (player_ym * 7) / 8;
             }
 
-            /* Stop thruster sound: */
+          /* Stop thruster sound: */
 
           if (use_sound)
             {
