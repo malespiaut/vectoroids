@@ -127,7 +127,7 @@ enum
   NUM_SOUNDS
 };
 
-char* sound_names[NUM_SOUNDS] = {
+const char* sound_names[NUM_SOUNDS] = {
   DATA_PREFIX "sounds/bullet.wav",
   DATA_PREFIX "sounds/ast1.wav",
   DATA_PREFIX "sounds/ast2.wav",
@@ -140,7 +140,7 @@ char* sound_names[NUM_SOUNDS] = {
 
 #define CHAN_THRUST 0
 
-char* mus_game_name = DATA_PREFIX "music/decision.s3m";
+const char* mus_game_name = DATA_PREFIX "music/decision.s3m";
 
 #ifdef JOY_YES
 #define JOY_A 0
