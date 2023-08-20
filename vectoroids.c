@@ -477,6 +477,19 @@ void show_version(void);
 void show_usage(FILE* f, const char* prg);
 void draw_centered_text(char* str, int32_t y, int32_t s, color_type c);
 
+
+const char*
+user_file_path_get(const char* file_name)
+{
+  static char path[1024] = {0};
+  const char* user_dir = SDL_GetPrefPath("Logicoq", "Vectoroids");
+
+  SDL_snprintf(path, sizeof(path), "%s%s", user_dir, file_name);
+  return path;
+}
+
+
+
 /* --- MAIN --- */
 
 int
@@ -484,16 +497,13 @@ main(const int argc, const char* argv[])
 {
   int32_t done = 0;
   FILE* fi = 0;
-  char statefile[256] = {0}, buf[256] = {0};
+  char buf[256] = {0};
 
   setup(argc, argv);
 
   /* Load state from disk: */
 
-  /* snprintf(statefile, sizeof(statefile), "%s/.vectoroids-state",
-     getenv("HOME")); */
-  sprintf(statefile, "%s/.vectoroids-state",
-          getenv("HOME"));
+  const char* statefile = user_file_path_get("vectoroids-state");
 
   fi = fopen(statefile, "r");
   if (fi)
