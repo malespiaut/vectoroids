@@ -20,9 +20,9 @@
 
 */
 
-#define GAME_NAME "Vectoroids"
-#define VER_VERSION "1.2.0"
-#define VER_DATE "2023.08.17"
+#define kGameName "Vectoroids"
+#define kGameVersion "1.2.0"
+#define kGameDate "2023.08.17"
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -40,21 +40,21 @@
 
 /* Constraints: */
 
-#define NUM_BULLETS 2
+#define kNumBullets 2
 
-#define NUM_ASTEROIDS 20
-#define NUM_BITS 50
+#define kNumAsteroids 20
+#define kNumBits 50
 
-#define AST_SIDES 6
-#define AST_RADIUS 10
-#define SHIP_RADIUS 20
+#define kAsteroidsSides 6
+#define kAsteroidsRadius 10
+#define kShipRadius 20
 
-#define ZOOM_START 40
-#define ONEUP_SCORE 10000
-#define FPS 60
+#define kZoomStart 40
+#define kOneUpScore 10000
+#define kScreenFPS 60
 
-#define WIDTH 480
-#define HEIGHT 480
+#define kScreenWidth 480
+#define kScreenHeight 480
 
 #define LEFT_EDGE 0x0001
 #define RIGHT_EDGE 0x0002
@@ -88,7 +88,7 @@ typedef struct asteroid_type
   int32_t x, y;
   int32_t xm, ym;
   int32_t angle, angle_m;
-  shape_type shape[AST_SIDES];
+  shape_type shape[kAsteroidsSides];
 } asteroid_type;
 
 typedef struct bit_type
@@ -153,9 +153,9 @@ Mix_Music* game_music = 0;
 #ifdef JOY_YES
 SDL_Joystick* js = 0;
 #endif
-bullet_type bullets[NUM_BULLETS] = {0};
-asteroid_type asteroids[NUM_ASTEROIDS] = {0};
-bit_type bits[NUM_BITS] = {0};
+bullet_type bullets[kNumBullets] = {0};
+asteroid_type asteroids[kNumAsteroids] = {0};
+bit_type bits[kNumBits] = {0};
 bool use_sound = true, use_joystick = false, fullscreen = false;
 int32_t text_zoom = 0;
 char zoom_str[24] = {0};
@@ -475,7 +475,7 @@ const char*
 user_file_path_get(const char* file_name)
 {
   static char path[1024] = {0};
-  const char* user_dir = SDL_GetPrefPath("Logicoq", GAME_NAME);
+  const char* user_dir = SDL_GetPrefPath("Logicoq", kGameName);
 
   SDL_snprintf(path, sizeof(path), "%s%s", user_dir, file_name);
   return path;
@@ -518,11 +518,11 @@ main(const int argc, const char* argv[])
     }
     buf[strlen(buf) - 1] = '\0';
 
-    if (strncmp(buf, VER_DATE, 10))
+    if (strncmp(buf, kGameDate, 10))
     {
       fprintf(stderr, "strncmp: %s state file format has been updated.\n"
                       "Old game state is unreadable.  Sorry!\n",
-              GAME_NAME);
+              kGameName);
     }
     else
     {
@@ -538,9 +538,9 @@ main(const int argc, const char* argv[])
       fread(&player_xm, sizeof(int), 1, fi);
       fread(&player_ym, sizeof(int), 1, fi);
       fread(&player_angle, sizeof(int), 1, fi);
-      fread(bullets, sizeof(bullet_type), NUM_BULLETS, fi);
-      fread(asteroids, sizeof(asteroid_type), NUM_ASTEROIDS, fi);
-      fread(bits, sizeof(bit_type), NUM_BITS, fi);
+      fread(bullets, sizeof(bullet_type), kNumBullets, fi);
+      fread(asteroids, sizeof(asteroid_type), kNumAsteroids, fi);
+      fread(bits, sizeof(bit_type), kNumBits, fi);
     }
 
     if (fclose(fi))
@@ -572,8 +572,8 @@ main(const int argc, const char* argv[])
   }
   else
   {
-    fprintf(fi, "%s State File\n", GAME_NAME);
-    fprintf(fi, "%s\n", VER_DATE);
+    fprintf(fi, "%s State File\n", kGameName);
+    fprintf(fi, "%s\n", kGameDate);
 
     fputc(game_pending, fi);
     fputc(lives, fi);
@@ -587,9 +587,9 @@ main(const int argc, const char* argv[])
     fwrite(&player_xm, sizeof(int), 1, fi);
     fwrite(&player_ym, sizeof(int), 1, fi);
     fwrite(&player_angle, sizeof(int), 1, fi);
-    fwrite(bullets, sizeof(bullet_type), NUM_BULLETS, fi);
-    fwrite(asteroids, sizeof(asteroid_type), NUM_ASTEROIDS, fi);
-    fwrite(bits, sizeof(bit_type), NUM_BITS, fi);
+    fwrite(bullets, sizeof(bullet_type), kNumBullets, fi);
+    fwrite(asteroids, sizeof(asteroid_type), kNumAsteroids, fi);
+    fwrite(bits, sizeof(bit_type), kNumBits, fi);
 
     if (fclose(fi))
     {
@@ -616,14 +616,14 @@ title(void)
   letter_type letters[11] = {0};
   for (size_t i = 0; i < strlen(titlestr); i++)
   {
-    letters[i].x = (rand() % WIDTH);
-    letters[i].y = (rand() % HEIGHT);
+    letters[i].x = (rand() % kScreenWidth);
+    letters[i].y = (rand() % kScreenHeight);
     letters[i].xm = 0;
     letters[i].ym = 0;
   }
 
-  int32_t x = (rand() % WIDTH);
-  int32_t y = (rand() % HEIGHT);
+  int32_t x = (rand() % kScreenWidth);
+  int32_t y = (rand() % kScreenHeight);
   int32_t xm = (rand() % 4) + 2;
   int32_t ym = (rand() % 10) - 5;
 
@@ -653,20 +653,20 @@ title(void)
 
     x += xm;
 
-    if (x >= WIDTH)
+    if (x >= kScreenWidth)
     {
-      x -= WIDTH;
+      x -= kScreenWidth;
     }
 
     y += ym;
 
-    if (y >= HEIGHT)
+    if (y >= kScreenHeight)
     {
-      y -= HEIGHT;
+      y -= kScreenHeight;
     }
     else if (y < 0)
     {
-      y += HEIGHT;
+      y += kScreenHeight;
     }
 
     /* Handle events: */
@@ -702,14 +702,14 @@ title(void)
 #endif
       else if (event.type == SDL_MOUSEBUTTONDOWN)
       {
-        if (event.button.x >= (WIDTH - 50) / 2 && event.button.x <= (WIDTH + 50) / 2 && event.button.y >= 180 && event.button.y <= 195)
+        if (event.button.x >= (kScreenWidth - 50) / 2 && event.button.x <= (kScreenWidth + 50) / 2 && event.button.y >= 180 && event.button.y <= 195)
         {
           /* Start! */
 
           game_pending = false;
           done = true;
         }
-        else if (event.button.x >= (WIDTH - 80) / 2 && event.button.x <= (WIDTH + 80) / 2 && event.button.y >= 200 && event.button.y <= 215 && game_pending)
+        else if (event.button.x >= (kScreenWidth - 80) / 2 && event.button.x <= (kScreenWidth + 80) / 2 && event.button.y >= 200 && event.button.y <= 215 && game_pending)
         {
           done = true;
         }
@@ -728,11 +728,11 @@ title(void)
 
         /* Home in on final spot! */
 
-        if (letters[i].x > ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) && letters[i].xm > -4)
+        if (letters[i].x > ((kScreenWidth - (strlen(titlestr) * 14)) / 2 + (i * 14)) && letters[i].xm > -4)
         {
           letters[i].xm--;
         }
-        else if (letters[i].x < ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) && letters[i].xm < 4)
+        else if (letters[i].x < ((kScreenWidth - (strlen(titlestr) * 14)) / 2 + (i * 14)) && letters[i].xm < 4)
         {
           letters[i].xm++;
         }
@@ -748,9 +748,9 @@ title(void)
 
         /* Snap into place: */
 
-        if (letters[i].x >= ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) - 8 && letters[i].x <= ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14)) + 8 && letters[i].y >= 92 && letters[i].y <= 108 && (letters[i].xm != 0 || letters[i].ym != 0))
+        if (letters[i].x >= ((kScreenWidth - (strlen(titlestr) * 14)) / 2 + (i * 14)) - 8 && letters[i].x <= ((kScreenWidth - (strlen(titlestr) * 14)) / 2 + (i * 14)) + 8 && letters[i].y >= 92 && letters[i].y <= 108 && (letters[i].xm != 0 || letters[i].ym != 0))
         {
-          letters[i].x = ((WIDTH - (strlen(titlestr) * 14)) / 2 + (i * 14));
+          letters[i].x = ((kScreenWidth - (strlen(titlestr) * 14)) / 2 + (i * 14));
           letters[i].xm = 0;
 
           letters[i].y = 100;
@@ -807,8 +807,8 @@ title(void)
       char str[20] = {0};
 
       sprintf(str, "HIGH %.6ld", high);
-      draw_text(str, (WIDTH - 110) / 2, 5, 5, mkcolor(128, 255, 255));
-      draw_text(str, (WIDTH - 110) / 2 + 1, 6, 5, mkcolor(128, 255, 255));
+      draw_text(str, (kScreenWidth - 110) / 2, 5, 5, mkcolor(128, 255, 255));
+      draw_text(str, (kScreenWidth - 110) / 2 + 1, 6, 5, mkcolor(128, 255, 255));
 
       if (score && (score != high || (counter % 20) < 10))
       {
@@ -820,16 +820,16 @@ title(void)
         {
           sprintf(str, "SCR  %.6ld", score);
         }
-        draw_text(str, (WIDTH - 110) / 2, 25, 5, mkcolor(128, 128, 255));
-        draw_text(str, (WIDTH - 110) / 2 + 1, 26, 5, mkcolor(128, 128, 255));
+        draw_text(str, (kScreenWidth - 110) / 2, 25, 5, mkcolor(128, 128, 255));
+        draw_text(str, (kScreenWidth - 110) / 2 + 1, 26, 5, mkcolor(128, 128, 255));
       }
     }
 
-    draw_text("START", (WIDTH - 50) / 2, 180, 5, mkcolor(0, 255, 0));
+    draw_text("START", (kScreenWidth - 50) / 2, 180, 5, mkcolor(0, 255, 0));
 
     if (game_pending)
     {
-      draw_text("CONTINUE", (WIDTH - 80) / 2, 200, 5, mkcolor(0, 255, 0));
+      draw_text("CONTINUE", (kScreenWidth - 80) / 2, 200, 5, mkcolor(0, 255, 0));
     }
 
     /* (Giant rock) */
@@ -853,9 +853,9 @@ title(void)
 
     Uint64 now_time = SDL_GetTicks64();
 
-    if (now_time < last_time + (1000 / FPS))
+    if (now_time < last_time + (1000 / kScreenFPS))
     {
-      SDL_Delay(last_time + 1000 / FPS - now_time);
+      SDL_Delay(last_time + 1000 / kScreenFPS - now_time);
     }
   }
 
@@ -883,8 +883,8 @@ game(void)
     player_alive = 1;
     player_die_timer = 0;
     player_angle = 90;
-    player_x = (WIDTH / 2) << 4;
-    player_y = (HEIGHT / 2) << 4;
+    player_x = (kScreenWidth / 2) << 4;
+    player_y = (kScreenHeight / 2) << 4;
     player_xm = 0;
     player_ym = 0;
 
@@ -1122,8 +1122,8 @@ game(void)
 
           player_die_timer = 0;
           player_angle = 90;
-          player_x = (WIDTH / 2) << 4;
-          player_y = (HEIGHT / 2) << 4;
+          player_x = (kScreenWidth / 2) << 4;
+          player_y = (kScreenHeight / 2) << 4;
           player_xm = 0;
           player_ym = 0;
 
@@ -1133,11 +1133,11 @@ game(void)
 
           if (!shift_pressed)
           {
-            for (size_t i = 0; i < NUM_ASTEROIDS && player_alive; i++)
+            for (size_t i = 0; i < kNumAsteroids && player_alive; i++)
             {
               if (asteroids[i].alive)
               {
-                if (asteroids[i].x >= (player_x >> 4) - (WIDTH / 5) && asteroids[i].x <= (player_x >> 4) + (WIDTH / 5) && asteroids[i].y >= (player_y >> 4) - (HEIGHT / 5) && asteroids[i].y <= (player_y >> 4) + (HEIGHT / 5))
+                if (asteroids[i].x >= (player_x >> 4) - (kScreenWidth / 5) && asteroids[i].x <= (player_x >> 4) + (kScreenWidth / 5) && asteroids[i].y >= (player_y >> 4) - (kScreenHeight / 5) && asteroids[i].y <= (player_y >> 4) + (kScreenHeight / 5))
                 {
                   /* If any asteroid is too close for comfort,
                      don't bring ship back yet! */
@@ -1169,27 +1169,27 @@ game(void)
 
     /* Wrap ship around edges of screen: */
 
-    if (player_x >= (WIDTH << 4))
+    if (player_x >= (kScreenWidth << 4))
     {
-      player_x -= (WIDTH << 4);
+      player_x -= (kScreenWidth << 4);
     }
     else if (player_x < 0)
     {
-      player_x += (WIDTH << 4);
+      player_x += (kScreenWidth << 4);
     }
 
-    if (player_y >= (HEIGHT << 4))
+    if (player_y >= (kScreenHeight << 4))
     {
-      player_y -= (HEIGHT << 4);
+      player_y -= (kScreenHeight << 4);
     }
     else if (player_y < 0)
     {
-      player_y += (HEIGHT << 4);
+      player_y += (kScreenHeight << 4);
     }
 
     /* Move bullets: */
 
-    for (size_t i = 0; i < NUM_BULLETS; i++)
+    for (size_t i = 0; i < kNumBullets; i++)
     {
       if (bullets[i].timer >= 0)
       {
@@ -1204,31 +1204,31 @@ game(void)
 
         /* Wrap bullet around edges of screen: */
 
-        if (bullets[i].x >= WIDTH)
+        if (bullets[i].x >= kScreenWidth)
         {
-          bullets[i].x = bullets[i].x - WIDTH;
+          bullets[i].x = bullets[i].x - kScreenWidth;
         }
         else if (bullets[i].x < 0)
         {
-          bullets[i].x = bullets[i].x + WIDTH;
+          bullets[i].x = bullets[i].x + kScreenWidth;
         }
 
-        if (bullets[i].y >= HEIGHT)
+        if (bullets[i].y >= kScreenHeight)
         {
-          bullets[i].y = bullets[i].y - HEIGHT;
+          bullets[i].y = bullets[i].y - kScreenHeight;
         }
         else if (bullets[i].y < 0)
         {
-          bullets[i].y = bullets[i].y + HEIGHT;
+          bullets[i].y = bullets[i].y + kScreenHeight;
         }
 
         /* Check for collision with any asteroids! */
 
-        for (size_t j = 0; j < NUM_ASTEROIDS; j++)
+        for (size_t j = 0; j < kNumAsteroids; j++)
         {
           if (bullets[i].timer > 0 && asteroids[j].alive)
           {
-            if ((bullets[i].x + 5 >= asteroids[j].x - asteroids[j].size * AST_RADIUS) && (bullets[i].x - 5 <= asteroids[j].x + asteroids[j].size * AST_RADIUS) && (bullets[i].y + 5 >= asteroids[j].y - asteroids[j].size * AST_RADIUS) && (bullets[i].y - 5 <= asteroids[j].y + asteroids[j].size * AST_RADIUS))
+            if ((bullets[i].x + 5 >= asteroids[j].x - asteroids[j].size * kAsteroidsRadius) && (bullets[i].x - 5 <= asteroids[j].x + asteroids[j].size * kAsteroidsRadius) && (bullets[i].y + 5 >= asteroids[j].y - asteroids[j].size * kAsteroidsRadius) && (bullets[i].y - 5 <= asteroids[j].y + asteroids[j].size * kAsteroidsRadius))
             {
               /* Remove bullet! */
 
@@ -1245,7 +1245,7 @@ game(void)
 
     num_asteroids_alive = 0;
 
-    for (size_t i = 0; i < NUM_ASTEROIDS; i++)
+    for (size_t i = 0; i < kNumAsteroids; i++)
     {
       if (asteroids[i].alive)
       {
@@ -1261,22 +1261,22 @@ game(void)
 
         /* Wrap asteroid around edges of screen: */
 
-        if (asteroids[i].x >= WIDTH)
+        if (asteroids[i].x >= kScreenWidth)
         {
-          asteroids[i].x = asteroids[i].x - WIDTH;
+          asteroids[i].x = asteroids[i].x - kScreenWidth;
         }
         else if (asteroids[i].x < 0)
         {
-          asteroids[i].x = asteroids[i].x + WIDTH;
+          asteroids[i].x = asteroids[i].x + kScreenWidth;
         }
 
-        if (asteroids[i].y >= HEIGHT)
+        if (asteroids[i].y >= kScreenHeight)
         {
-          asteroids[i].y = asteroids[i].y - HEIGHT;
+          asteroids[i].y = asteroids[i].y - kScreenHeight;
         }
         else if (asteroids[i].y < 0)
         {
-          asteroids[i].y = asteroids[i].y + HEIGHT;
+          asteroids[i].y = asteroids[i].y + kScreenHeight;
         }
 
         /* Rotate asteroid: */
@@ -1296,9 +1296,9 @@ game(void)
 
         /* See if we collided with the player: */
 
-        if (asteroids[i].x >= (player_x >> 4) - SHIP_RADIUS && asteroids[i].x <= (player_x >> 4) + SHIP_RADIUS && asteroids[i].y >= (player_y >> 4) - SHIP_RADIUS && asteroids[i].y <= (player_y >> 4) + SHIP_RADIUS && player_alive)
+        if (asteroids[i].x >= (player_x >> 4) - kShipRadius && asteroids[i].x <= (player_x >> 4) + kShipRadius && asteroids[i].y >= (player_y >> 4) - kShipRadius && asteroids[i].y <= (player_y >> 4) + kShipRadius && player_alive)
         {
-          hurt_asteroid(i, player_xm >> 4, player_ym >> 4, NUM_BITS);
+          hurt_asteroid(i, player_xm >> 4, player_ym >> 4, kNumBits);
 
           player_alive = 0;
           player_die_timer = 30;
@@ -1335,7 +1335,7 @@ game(void)
 
     /* Move bits: */
 
-    for (size_t i = 0; i < NUM_BITS; i++)
+    for (size_t i = 0; i < kNumBits; i++)
     {
       if (bits[i].timer > 0)
       {
@@ -1350,22 +1350,22 @@ game(void)
 
         /* Wrap bit around edges of screen: */
 
-        if (bits[i].x >= WIDTH)
+        if (bits[i].x >= kScreenWidth)
         {
-          bits[i].x = bits[i].x - WIDTH;
+          bits[i].x = bits[i].x - kScreenWidth;
         }
         else if (bits[i].x < 0)
         {
-          bits[i].x = bits[i].x + WIDTH;
+          bits[i].x = bits[i].x + kScreenWidth;
         }
 
-        if (bits[i].y >= HEIGHT)
+        if (bits[i].y >= kScreenHeight)
         {
-          bits[i].y = bits[i].y - HEIGHT;
+          bits[i].y = bits[i].y - kScreenHeight;
         }
         else if (bits[i].y < 0)
         {
-          bits[i].y = bits[i].y + HEIGHT;
+          bits[i].y = bits[i].y + kScreenHeight;
         }
       }
     }
@@ -1374,13 +1374,13 @@ game(void)
 
     if (player_alive)
     {
-      draw_segment(SHIP_RADIUS, 0, mkcolor(128, 128, 255), SHIP_RADIUS / 2, 135, mkcolor(0, 0, 192), player_x >> 4, player_y >> 4, player_angle);
+      draw_segment(kShipRadius, 0, mkcolor(128, 128, 255), kShipRadius / 2, 135, mkcolor(0, 0, 192), player_x >> 4, player_y >> 4, player_angle);
 
-      draw_segment(SHIP_RADIUS / 2, 135, mkcolor(0, 0, 192), 0, 0, mkcolor(64, 64, 230), player_x >> 4, player_y >> 4, player_angle);
+      draw_segment(kShipRadius / 2, 135, mkcolor(0, 0, 192), 0, 0, mkcolor(64, 64, 230), player_x >> 4, player_y >> 4, player_angle);
 
-      draw_segment(0, 0, mkcolor(64, 64, 230), SHIP_RADIUS / 2, 225, mkcolor(0, 0, 192), player_x >> 4, player_y >> 4, player_angle);
+      draw_segment(0, 0, mkcolor(64, 64, 230), kShipRadius / 2, 225, mkcolor(0, 0, 192), player_x >> 4, player_y >> 4, player_angle);
 
-      draw_segment(SHIP_RADIUS / 2, 225, mkcolor(0, 0, 192), SHIP_RADIUS, 0, mkcolor(128, 128, 255), player_x >> 4, player_y >> 4, player_angle);
+      draw_segment(kShipRadius / 2, 225, mkcolor(0, 0, 192), kShipRadius, 0, mkcolor(128, 128, 255), player_x >> 4, player_y >> 4, player_angle);
 
       /* Draw flame: */
 
@@ -1392,7 +1392,7 @@ game(void)
 
     /* Draw bullets: */
 
-    for (size_t i = 0; i < NUM_BULLETS; i++)
+    for (size_t i = 0; i < kNumBullets; i++)
     {
       if (bullets[i].timer >= 0)
       {
@@ -1444,7 +1444,7 @@ game(void)
 
     /* Draw asteroids: */
 
-    for (size_t i = 0; i < NUM_ASTEROIDS; i++)
+    for (size_t i = 0; i < kNumAsteroids; i++)
     {
       if (asteroids[i].alive)
       {
@@ -1458,7 +1458,7 @@ game(void)
 
     /* Draw bits: */
 
-    for (size_t i = 0; i < NUM_BITS; i++)
+    for (size_t i = 0; i < kNumBits; i++)
     {
       if (bits[i].timer > 0)
       {
@@ -1475,20 +1475,20 @@ game(void)
     /* Level: */
 
     sprintf(str, "%ld", level);
-    draw_text(str, (WIDTH - 14) / 2, 3, 14, mkcolor(255, 255, 255));
-    draw_text(str, (WIDTH - 14) / 2 + 1, 4, 14, mkcolor(255, 255, 255));
+    draw_text(str, (kScreenWidth - 14) / 2, 3, 14, mkcolor(255, 255, 255));
+    draw_text(str, (kScreenWidth - 14) / 2 + 1, 4, 14, mkcolor(255, 255, 255));
 
     /* Draw lives: */
     size_t k = 0;
     for (size_t i = 0; i < lives; i++, k++)
     {
-      draw_segment(16, 0, mkcolor(255, 255, 255), 4, 135, mkcolor(255, 255, 255), WIDTH - 10 - i * 10, 20, 90);
+      draw_segment(16, 0, mkcolor(255, 255, 255), 4, 135, mkcolor(255, 255, 255), kScreenWidth - 10 - i * 10, 20, 90);
 
-      draw_segment(8, 135, mkcolor(255, 255, 255), 0, 0, mkcolor(255, 255, 255), WIDTH - 10 - i * 10, 20, 90);
+      draw_segment(8, 135, mkcolor(255, 255, 255), 0, 0, mkcolor(255, 255, 255), kScreenWidth - 10 - i * 10, 20, 90);
 
-      draw_segment(0, 0, mkcolor(255, 255, 255), 8, 225, mkcolor(255, 255, 255), WIDTH - 10 - i * 10, 20, 90);
+      draw_segment(0, 0, mkcolor(255, 255, 255), 8, 225, mkcolor(255, 255, 255), kScreenWidth - 10 - i * 10, 20, 90);
 
-      draw_segment(8, 225, mkcolor(255, 255, 255), 16, 0, mkcolor(255, 255, 255), WIDTH - 10 - i * 10, 20, 90);
+      draw_segment(8, 225, mkcolor(255, 255, 255), 16, 0, mkcolor(255, 255, 255), kScreenWidth - 10 - i * 10, 20, 90);
     }
 
     if (player_die_timer > 0)
@@ -1504,13 +1504,13 @@ game(void)
         j = player_die_timer;
       }
 
-      draw_segment((16 * j) / 30, 0, mkcolor(255, 255, 255), (4 * j) / 30, 135, mkcolor(255, 255, 255), WIDTH - 10 - k * 10, 20, 90);
+      draw_segment((16 * j) / 30, 0, mkcolor(255, 255, 255), (4 * j) / 30, 135, mkcolor(255, 255, 255), kScreenWidth - 10 - k * 10, 20, 90);
 
-      draw_segment((8 * j) / 30, 135, mkcolor(255, 255, 255), 0, 0, mkcolor(255, 255, 255), WIDTH - 10 - k * 10, 20, 90);
+      draw_segment((8 * j) / 30, 135, mkcolor(255, 255, 255), 0, 0, mkcolor(255, 255, 255), kScreenWidth - 10 - k * 10, 20, 90);
 
-      draw_segment(0, 0, mkcolor(255, 255, 255), (8 * j) / 30, 225, mkcolor(255, 255, 255), WIDTH - 10 - k * 10, 20, 90);
+      draw_segment(0, 0, mkcolor(255, 255, 255), (8 * j) / 30, 225, mkcolor(255, 255, 255), kScreenWidth - 10 - k * 10, 20, 90);
 
-      draw_segment((8 * j) / 30, 225, mkcolor(255, 255, 255), (16 * j) / 30, 0, mkcolor(255, 255, 255), WIDTH - 10 - k * 10, 20, 90);
+      draw_segment((8 * j) / 30, 225, mkcolor(255, 255, 255), (16 * j) / 30, 0, mkcolor(255, 255, 255), kScreenWidth - 10 - k * 10, 20, 90);
     }
 
     /* Zooming level effect: */
@@ -1522,7 +1522,7 @@ game(void)
         text_zoom--;
       }
 
-      draw_text(zoom_str, (WIDTH - (strlen(zoom_str) * text_zoom)) / 2, (HEIGHT - text_zoom) / 2, text_zoom, mkcolor(text_zoom * (256 / ZOOM_START), 0, 0));
+      draw_text(zoom_str, (kScreenWidth - (strlen(zoom_str) * text_zoom)) / 2, (kScreenHeight - text_zoom) / 2, text_zoom, mkcolor(text_zoom * (256 / kZoomStart), 0, 0));
     }
 
     /* Game over? */
@@ -1532,8 +1532,8 @@ game(void)
       if (player_die_timer > 14)
       {
         draw_text("GAME OVER",
-                  (WIDTH - 9 * player_die_timer) / 2,
-                  (HEIGHT - player_die_timer) / 2,
+                  (kScreenWidth - 9 * player_die_timer) / 2,
+                  (kScreenHeight - player_die_timer) / 2,
                   player_die_timer,
                   mkcolor(rand() % 255,
                           rand() % 255,
@@ -1542,8 +1542,8 @@ game(void)
       else
       {
         draw_text("GAME OVER",
-                  (WIDTH - 9 * 14) / 2,
-                  (HEIGHT - 14) / 2,
+                  (kScreenWidth - 9 * 14) / 2,
+                  (kScreenHeight - 14) / 2,
                   14,
                   mkcolor(255, 255, 255));
       }
@@ -1564,9 +1564,9 @@ game(void)
 
     now_time = SDL_GetTicks();
 
-    if (now_time < last_time + (1000 / FPS))
+    if (now_time < last_time + (1000 / kScreenFPS))
     {
-      SDL_Delay(last_time + 1000 / FPS - now_time);
+      SDL_Delay(last_time + 1000 / kScreenFPS - now_time);
     }
   } while (!done);
 
@@ -1637,7 +1637,7 @@ setup(const int argc, const char* argv[])
     else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0)
     {
       show_version();
-      printf("State format file version " VER_DATE "\n");
+      printf("State format file version " kGameDate "\n");
       exit(0);
     }
     else if (strcmp(argv[i], "--copying") == 0 || strcmp(argv[i], "-c") == 0)
@@ -1764,7 +1764,7 @@ setup(const int argc, const char* argv[])
 
   /* Open window: */
 
-  g_window = SDL_CreateWindow(GAME_NAME " v" VER_VERSION, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+  g_window = SDL_CreateWindow(kGameName " v" kGameVersion, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, kScreenWidth, kScreenHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
   if (!g_window)
   {
@@ -1798,7 +1798,7 @@ setup(const int argc, const char* argv[])
     exit(1);
   }
 
-  SDL_RenderSetLogicalSize(g_renderer, WIDTH, HEIGHT);
+  SDL_RenderSetLogicalSize(g_renderer, kScreenWidth, kScreenHeight);
 
   /* Init sound: */
 
@@ -1893,20 +1893,20 @@ draw_line(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, color_t
 
   if (x1 < 0 || x2 < 0)
   {
-    sdl_drawline(x1 + WIDTH, y1, c1, x2 + WIDTH, y2, c2);
+    sdl_drawline(x1 + kScreenWidth, y1, c1, x2 + kScreenWidth, y2, c2);
   }
-  else if (x1 >= WIDTH || x2 >= WIDTH)
+  else if (x1 >= kScreenWidth || x2 >= kScreenWidth)
   {
-    sdl_drawline(x1 - WIDTH, y1, c1, x2 - WIDTH, y2, c2);
+    sdl_drawline(x1 - kScreenWidth, y1, c1, x2 - kScreenWidth, y2, c2);
   }
 
   if (y1 < 0 || y2 < 0)
   {
-    sdl_drawline(x1, y1 + HEIGHT, c1, x2, y2 + HEIGHT, c2);
+    sdl_drawline(x1, y1 + kScreenHeight, c1, x2, y2 + kScreenHeight, c2);
   }
-  else if (y1 >= HEIGHT || y2 >= HEIGHT)
+  else if (y1 >= kScreenHeight || y2 >= kScreenHeight)
   {
-    sdl_drawline(x1, y1 - HEIGHT, c1, x2, y2 - HEIGHT, c2);
+    sdl_drawline(x1, y1 - kScreenHeight, c1, x2, y2 - kScreenHeight, c2);
   }
 }
 
@@ -2062,8 +2062,8 @@ clip(int32_t* x1, int32_t* y1, int32_t* x2, int32_t* y2)
       }
       else if (code1 & RIGHT_EDGE)
       {
-        fy1 += (((WIDTH - 1) - (fx1)) * m);
-        fx1 = (WIDTH - 1);
+        fy1 += (((kScreenWidth - 1) - (fx1)) * m);
+        fx1 = (kScreenWidth - 1);
       }
       else if (code1 & TOP_EDGE)
       {
@@ -2077,9 +2077,9 @@ clip(int32_t* x1, int32_t* y1, int32_t* x2, int32_t* y2)
       {
         if (fx2 != fx1)
         {
-          fx1 += (((HEIGHT - 1) - (fy1)) / m);
+          fx1 += (((kScreenHeight - 1) - (fy1)) / m);
         }
-        fy1 = (HEIGHT - 1);
+        fy1 = (kScreenHeight - 1);
       }
     }
   }
@@ -2116,7 +2116,7 @@ encode(double x, double y)
   {
     code = code | LEFT_EDGE;
   }
-  else if (x >= (double)WIDTH)
+  else if (x >= (double)kScreenWidth)
   {
     code = code | RIGHT_EDGE;
   }
@@ -2125,7 +2125,7 @@ encode(double x, double y)
   {
     code = code | TOP_EDGE;
   }
-  else if (y >= (double)HEIGHT)
+  else if (y >= (double)kScreenHeight)
   {
     code = code | BOTTOM_EDGE;
   }
@@ -2201,7 +2201,7 @@ putpixel(int32_t x, int32_t y, color_type color)
 
   /* Assuming the X/Y values are within the bounds of this surface... */
 
-  if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT)
+  if (x >= 0 && y >= 0 && x < kScreenWidth && y < kScreenHeight)
   {
     SDL_SetRenderDrawColor(g_renderer, color.r, color.g, color.b, 255);
     SDL_RenderDrawPoint(g_renderer, x, y);
@@ -2273,7 +2273,7 @@ add_bullet(int32_t x, int32_t y, int32_t a, int32_t xm, int32_t ym)
 
   found = -1;
 
-  for (size_t i = 0; i < NUM_BULLETS && found == -1; i++)
+  for (size_t i = 0; i < kNumBullets && found == -1; i++)
   {
     if (bullets[i].timer <= 0)
     {
@@ -2306,7 +2306,7 @@ add_asteroid(int32_t x, int32_t y, int32_t xm, int32_t ym, int32_t size)
 
   found = -1;
 
-  for (size_t i = 0; i < NUM_ASTEROIDS && found == -1; i++)
+  for (size_t i = 0; i < kNumAsteroids && found == -1; i++)
   {
     if (asteroids[i].alive == 0)
     {
@@ -2335,7 +2335,7 @@ add_asteroid(int32_t x, int32_t y, int32_t xm, int32_t ym, int32_t size)
 
     asteroids[found].size = size;
 
-    for (size_t i = 0; i < AST_SIDES; i++)
+    for (size_t i = 0; i < kAsteroidsSides; i++)
     {
       asteroids[found].shape[i].radius = (rand() % 3);
       asteroids[found].shape[i].angle = i * 60 + (rand() % 40);
@@ -2352,7 +2352,7 @@ add_bit(int32_t x, int32_t y, int32_t xm, int32_t ym)
 
   found = -1;
 
-  for (size_t i = 0; i < NUM_BITS && found == -1; i++)
+  for (size_t i = 0; i < kNumBits && found == -1; i++)
   {
     if (bits[i].timer <= 0)
     {
@@ -2381,15 +2381,15 @@ draw_asteroid(int32_t size, int32_t x, int32_t y, int32_t angle, shape_type* sha
 
   div = 240;
 
-  for (size_t i = 0; i < AST_SIDES - 1; i++)
+  for (size_t i = 0; i < kAsteroidsSides - 1; i++)
   {
     b1 = (((shape[i].angle + angle) % 180) * 255) / div;
     b2 = (((shape[i + 1].angle + angle) % 180) * 255) / div;
 
-    draw_segment((size * (AST_RADIUS - shape[i].radius)),
+    draw_segment((size * (kAsteroidsRadius - shape[i].radius)),
                  shape[i].angle,
                  mkcolor(b1, b1, b1),
-                 (size * (AST_RADIUS - shape[i + 1].radius)),
+                 (size * (kAsteroidsRadius - shape[i + 1].radius)),
                  shape[i + 1].angle,
                  mkcolor(b2, b2, b2),
                  x,
@@ -2397,13 +2397,13 @@ draw_asteroid(int32_t size, int32_t x, int32_t y, int32_t angle, shape_type* sha
                  angle);
   }
 
-  b1 = (((shape[AST_SIDES - 1].angle + angle) % 180) * 255) / div;
+  b1 = (((shape[kAsteroidsSides - 1].angle + angle) % 180) * 255) / div;
   b2 = (((shape[0].angle + angle) % 180) * 255) / div;
 
-  draw_segment((size * (AST_RADIUS - shape[AST_SIDES - 1].radius)),
-               shape[AST_SIDES - 1].angle,
+  draw_segment((size * (kAsteroidsRadius - shape[kAsteroidsSides - 1].radius)),
+               shape[kAsteroidsSides - 1].angle,
                mkcolor(b1, b1, b1),
-               (size * (AST_RADIUS - shape[0].radius)),
+               (size * (kAsteroidsRadius - shape[0].radius)),
                shape[0].angle,
                mkcolor(b2, b2, b2),
                x,
@@ -2467,8 +2467,8 @@ hurt_asteroid(int32_t j, int32_t xm, int32_t ym, size_t exp_size)
 
   for (size_t k = 0; k < exp_size; k++)
   {
-    add_bit((asteroids[j].x - (asteroids[j].size * AST_RADIUS) + (rand() % (AST_RADIUS * 2))),
-            (asteroids[j].y - (asteroids[j].size * AST_RADIUS) + (rand() % (AST_RADIUS * 2))),
+    add_bit((asteroids[j].x - (asteroids[j].size * kAsteroidsRadius) + (rand() % (kAsteroidsRadius * 2))),
+            (asteroids[j].y - (asteroids[j].size * kAsteroidsRadius) + (rand() % (kAsteroidsRadius * 2))),
             ((rand() % (asteroids[j].size * 3)) - (asteroids[j].size) + ((xm + asteroids[j].xm) / 3)),
             ((rand() % (asteroids[j].size * 3)) - (asteroids[j].size) + ((ym + asteroids[j].ym) / 3)));
   }
@@ -2481,11 +2481,11 @@ add_score(int32_t amount)
 {
   /* See if they deserve a new life: */
 
-  if (score / ONEUP_SCORE < (score + amount) / ONEUP_SCORE)
+  if (score / kOneUpScore < (score + amount) / kOneUpScore)
   {
     lives++;
     strcpy(zoom_str, "EXTRA LIFE");
-    text_zoom = ZOOM_START;
+    text_zoom = kZoomStart;
     playsound(SND_EXTRALIFE);
   }
 
@@ -2549,25 +2549,25 @@ draw_thick_line(int32_t x1, int32_t y1, color_type c1, int32_t x2, int32_t y2, c
 void
 reset_level(void)
 {
-  for (size_t i = 0; i < NUM_BULLETS; i++)
+  for (size_t i = 0; i < kNumBullets; i++)
   {
     bullets[i].timer = 0;
   }
 
-  for (size_t i = 0; i < NUM_ASTEROIDS; i++)
+  for (size_t i = 0; i < kNumAsteroids; i++)
   {
     asteroids[i].alive = 0;
   }
 
-  for (size_t i = 0; i < NUM_BITS; i++)
+  for (size_t i = 0; i < kNumBits; i++)
   {
     bits[i].timer = 0;
   }
 
   for (size_t i = 0; i < (level + 1) && i < 10; i++)
   {
-    add_asteroid(/* x */ (rand() % 40) + ((WIDTH - 40) * (rand() % 2)),
-                 /* y */ (rand() % HEIGHT),
+    add_asteroid(/* x */ (rand() % 40) + ((kScreenWidth - 40) * (rand() % 2)),
+                 /* y */ (rand() % kScreenHeight),
                  /* xm */ (rand() % 9) - 4,
                  /* ym */ ((rand() % 9) - 4) * 4,
                  /* size */ (rand() % 3) + 2);
@@ -2575,7 +2575,7 @@ reset_level(void)
 
   sprintf(zoom_str, "LEVEL %ld", level);
 
-  text_zoom = ZOOM_START;
+  text_zoom = kZoomStart;
 }
 
 /* Show program version: */
@@ -2583,7 +2583,7 @@ reset_level(void)
 void
 show_version(void)
 {
-  printf("%s - v%s (%s)\n", GAME_NAME, VER_VERSION, VER_DATE);
+  printf("%s - v%s (%s)\n", kGameName, kGameVersion, kGameDate);
 }
 
 /* Show usage display: */
@@ -2602,5 +2602,5 @@ show_usage(FILE* f, const char* prg)
 void
 draw_centered_text(char* str, int32_t y, int32_t s, color_type c)
 {
-  draw_text(str, (WIDTH - strlen(str) * (s + 3)) / 2, y, s, c);
+  draw_text(str, (kScreenWidth - strlen(str) * (s + 3)) / 2, y, s, c);
 }
