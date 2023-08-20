@@ -490,14 +490,10 @@ main(const int argc, const char* argv[])
 
   /* Load state from disk: */
 
-#ifndef _WIN32
   /* snprintf(statefile, sizeof(statefile), "%s/.vectoroids-state",
      getenv("HOME")); */
   sprintf(statefile, "%s/.vectoroids-state",
           getenv("HOME"));
-#else
-  sprintf(statefile, "vectoroids-state.dat");
-#endif
 
   fi = fopen(statefile, "r");
   if (fi)
