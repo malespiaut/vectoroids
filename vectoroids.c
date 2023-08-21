@@ -475,6 +475,31 @@ void show_usage(FILE* f, const char* prg);
 void draw_centered_text(char* str, int32_t y, int32_t s, SDL_Color c);
 const char* user_file_path_get(const char* file_name);
 
+/* PRNG - xoshiro256++ */
+
+uint64_t rngstate[4] = {0xdeadbeef, 0x8badf00d, 0xbaaaaaad, 0xfeedc0de};
+
+static inline uint64_t
+rotl(const uint64_t x, int k)
+{
+  return (x << k) | (x >> (64 - k));
+}
+
+// Returns a Uint64 random number
+uint64_t
+random_get(void)
+{
+  const uint64_t result = rotl(rngstate[0] + rngstate[3], 23) + rngstate[0];
+  const uint64_t t = rngstate[1] << 17;
+  rngstate[2] ^= rngstate[0];
+  rngstate[3] ^= rngstate[1];
+  rngstate[1] ^= rngstate[2];
+  rngstate[0] ^= rngstate[3];
+  rngstate[2] ^= t;
+  rngstate[3] = rotl(rngstate[3], 45);
+  return result;
+}
+
 /* File manipulation */
 
 const char*
@@ -622,18 +647,20 @@ title(void)
   Letter letters[11] = {0};
   for (size_t i = 0; i < strlen(titlestr); i++)
   {
-    letters[i].x = (rand() % kScreenWidth);
-    letters[i].y = (rand() % kScreenHeight);
+    letters[i].x = (random_get() % kScreenWidth);
+    letters[i].y = (random_get() % kScreenHeight);
     letters[i].xm = 0;
     letters[i].ym = 0;
   }
 
-  int32_t x = (rand() % kScreenWidth);
-  int32_t y = (rand() % kScreenHeight);
-  int32_t xm = (rand() % 4) + 2;
-  int32_t ym = (rand() % 10) - 5;
+  int32_t x = (random_get() % kScreenWidth);
+  int32_t y = (random_get() % kScreenHeight);
+  int32_t xm = (random_get() % 4) + 2;
+  int32_t ym = (random_get() % 10) - 5;
 
   int32_t size = 40;
+  
+  size_t snapped = 0;
 
   bool done = false;
   int32_t angle = 0;
@@ -724,7 +751,6 @@ title(void)
 
     /* Move title characters: */
 
-    size_t snapped = 0;
     if (snapped < strlen(titlestr))
     {
       for (size_t i = 0; i < strlen(titlestr); ++i)
@@ -1392,7 +1418,7 @@ game(void)
 
       if (up_pressed)
       {
-        draw_segment(0, 0, mkcolor(255, 255, 255), (rand() % 20), 180, mkcolor(255, 0, 0), player_x >> 4, player_y >> 4, player_angle);
+        draw_segment(0, 0, mkcolor(255, 255, 255), (random_get() % 20), 180, mkcolor(255, 0, 0), player_x >> 4, player_y >> 4, player_angle);
       }
     }
 
@@ -1402,49 +1428,49 @@ game(void)
     {
       if (bullets[i].timer >= 0)
       {
-        draw_line(bullets[i].x - (rand() % 3) - bullets[i].xm * 2,
-                  bullets[i].y - (rand() % 3) - bullets[i].ym * 2,
-                  mkcolor((rand() % 3) * 128,
-                          (rand() % 3) * 128,
-                          (rand() % 3) * 128),
-                  bullets[i].x + (rand() % 3) - bullets[i].xm * 2,
-                  bullets[i].y + (rand() % 3) - bullets[i].ym * 2,
-                  mkcolor((rand() % 3) * 128,
-                          (rand() % 3) * 128,
-                          (rand() % 3) * 128));
+        draw_line(bullets[i].x - (random_get() % 3) - bullets[i].xm * 2,
+                  bullets[i].y - (random_get() % 3) - bullets[i].ym * 2,
+                  mkcolor((random_get() % 3) * 128,
+                          (random_get() % 3) * 128,
+                          (random_get() % 3) * 128),
+                  bullets[i].x + (random_get() % 3) - bullets[i].xm * 2,
+                  bullets[i].y + (random_get() % 3) - bullets[i].ym * 2,
+                  mkcolor((random_get() % 3) * 128,
+                          (random_get() % 3) * 128,
+                          (random_get() % 3) * 128));
 
-        draw_line(bullets[i].x + (rand() % 3) - bullets[i].xm * 2,
-                  bullets[i].y - (rand() % 3) - bullets[i].ym * 2,
-                  mkcolor((rand() % 3) * 128,
-                          (rand() % 3) * 128,
-                          (rand() % 3) * 128),
-                  bullets[i].x - (rand() % 3) - bullets[i].xm * 2,
-                  bullets[i].y + (rand() % 3) - bullets[i].ym * 2,
-                  mkcolor((rand() % 3) * 128,
-                          (rand() % 3) * 128,
-                          (rand() % 3) * 128));
+        draw_line(bullets[i].x + (random_get() % 3) - bullets[i].xm * 2,
+                  bullets[i].y - (random_get() % 3) - bullets[i].ym * 2,
+                  mkcolor((random_get() % 3) * 128,
+                          (random_get() % 3) * 128,
+                          (random_get() % 3) * 128),
+                  bullets[i].x - (random_get() % 3) - bullets[i].xm * 2,
+                  bullets[i].y + (random_get() % 3) - bullets[i].ym * 2,
+                  mkcolor((random_get() % 3) * 128,
+                          (random_get() % 3) * 128,
+                          (random_get() % 3) * 128));
 
-        draw_thick_line(bullets[i].x - (rand() % 5),
-                        bullets[i].y - (rand() % 5),
-                        mkcolor((rand() % 3) * 128 + 64,
-                                (rand() % 3) * 128 + 64,
-                                (rand() % 3) * 128 + 64),
-                        bullets[i].x + (rand() % 5),
-                        bullets[i].y + (rand() % 5),
-                        mkcolor((rand() % 3) * 128 + 64,
-                                (rand() % 3) * 128 + 64,
-                                (rand() % 3) * 128 + 64));
+        draw_thick_line(bullets[i].x - (random_get() % 5),
+                        bullets[i].y - (random_get() % 5),
+                        mkcolor((random_get() % 3) * 128 + 64,
+                                (random_get() % 3) * 128 + 64,
+                                (random_get() % 3) * 128 + 64),
+                        bullets[i].x + (random_get() % 5),
+                        bullets[i].y + (random_get() % 5),
+                        mkcolor((random_get() % 3) * 128 + 64,
+                                (random_get() % 3) * 128 + 64,
+                                (random_get() % 3) * 128 + 64));
 
-        draw_thick_line(bullets[i].x + (rand() % 5),
-                        bullets[i].y - (rand() % 5),
-                        mkcolor((rand() % 3) * 128 + 64,
-                                (rand() % 3) * 128 + 64,
-                                (rand() % 3) * 128 + 64),
-                        bullets[i].x - (rand() % 5),
-                        bullets[i].y + (rand() % 5),
-                        mkcolor((rand() % 3) * 128 + 64,
-                                (rand() % 3) * 128 + 64,
-                                (rand() % 3) * 128 + 64));
+        draw_thick_line(bullets[i].x + (random_get() % 5),
+                        bullets[i].y - (random_get() % 5),
+                        mkcolor((random_get() % 3) * 128 + 64,
+                                (random_get() % 3) * 128 + 64,
+                                (random_get() % 3) * 128 + 64),
+                        bullets[i].x - (random_get() % 5),
+                        bullets[i].y + (random_get() % 5),
+                        mkcolor((random_get() % 3) * 128 + 64,
+                                (random_get() % 3) * 128 + 64,
+                                (random_get() % 3) * 128 + 64));
       }
     }
 
@@ -1541,9 +1567,9 @@ game(void)
                   (kScreenWidth - 9 * player_die_timer) / 2,
                   (kScreenHeight - player_die_timer) / 2,
                   player_die_timer,
-                  mkcolor(rand() % 255,
-                          rand() % 255,
-                          rand() % 255));
+                  mkcolor(random_get() % 255,
+                          random_get() % 255,
+                          random_get() % 255));
       }
       else
       {
@@ -2324,7 +2350,7 @@ add_asteroid(int32_t x, int32_t y, int32_t xm, int32_t ym, int32_t size)
 
   while (xm == 0)
   {
-    xm = (rand() % 3) - 1;
+    xm = (random_get() % 3) - 1;
   }
 
   if (found != -1)
@@ -2336,15 +2362,15 @@ add_asteroid(int32_t x, int32_t y, int32_t xm, int32_t ym, int32_t size)
     asteroids[found].xm = xm;
     asteroids[found].ym = ym;
 
-    asteroids[found].angle = (rand() % 360);
-    asteroids[found].angle_m = (rand() % 6) - 3;
+    asteroids[found].angle = (random_get() % 360);
+    asteroids[found].angle_m = (random_get() % 6) - 3;
 
     asteroids[found].size = size;
 
     for (size_t i = 0; i < kAsteroidsSides; i++)
     {
-      asteroids[found].shape[i].radius = (rand() % 3);
-      asteroids[found].shape[i].angle = i * 60 + (rand() % 40);
+      asteroids[found].shape[i].radius = (random_get() % 3);
+      asteroids[found].shape[i].angle = i * 60 + (random_get() % 40);
     }
   }
 }
@@ -2471,10 +2497,10 @@ hurt_asteroid(int32_t j, int32_t xm, int32_t ym, size_t exp_size)
 
   for (size_t k = 0; k < exp_size; k++)
   {
-    add_bit((asteroids[j].x - (asteroids[j].size * kAsteroidsRadius) + (rand() % (kAsteroidsRadius * 2))),
-            (asteroids[j].y - (asteroids[j].size * kAsteroidsRadius) + (rand() % (kAsteroidsRadius * 2))),
-            ((rand() % (asteroids[j].size * 3)) - (asteroids[j].size) + ((xm + asteroids[j].xm) / 3)),
-            ((rand() % (asteroids[j].size * 3)) - (asteroids[j].size) + ((ym + asteroids[j].ym) / 3)));
+    add_bit((asteroids[j].x - (asteroids[j].size * kAsteroidsRadius) + (random_get() % (kAsteroidsRadius * 2))),
+            (asteroids[j].y - (asteroids[j].size * kAsteroidsRadius) + (random_get() % (kAsteroidsRadius * 2))),
+            ((random_get() % (asteroids[j].size * 3)) - (asteroids[j].size) + ((xm + asteroids[j].xm) / 3)),
+            ((random_get() % (asteroids[j].size * 3)) - (asteroids[j].size) + ((ym + asteroids[j].ym) / 3)));
   }
 }
 
@@ -2570,11 +2596,11 @@ reset_level(void)
 
   for (size_t i = 0; i < (level + 1) && i < 10; i++)
   {
-    add_asteroid(/* x */ (rand() % 40) + ((kScreenWidth - 40) * (rand() % 2)),
-                 /* y */ (rand() % kScreenHeight),
-                 /* xm */ (rand() % 9) - 4,
-                 /* ym */ ((rand() % 9) - 4) * 4,
-                 /* size */ (rand() % 3) + 2);
+    add_asteroid(/* x */ (random_get() % 40) + ((kScreenWidth - 40) * (random_get() % 2)),
+                 /* y */ (random_get() % kScreenHeight),
+                 /* xm */ (random_get() % 9) - 4,
+                 /* ym */ ((random_get() % 9) - 4) * 4,
+                 /* size */ (random_get() % 3) + 2);
   }
 
   sprintf(zoom_str, "LEVEL %ld", level);
