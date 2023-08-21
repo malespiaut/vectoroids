@@ -24,15 +24,17 @@
 #define kGameVersion "1.2.0"
 #define kGameDate "2023.08.17"
 
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_mixer.h>
+#include <assert.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_mixer.h>
 
 #ifndef DATA_PREFIX
 #define DATA_PREFIX "data/"
@@ -2448,9 +2450,11 @@ draw_asteroid(int32_t size, int32_t x, int32_t y, int32_t angle, Shape* shape)
 void
 playsound(int32_t snd)
 {
-  if (use_sound && snd < NUM_SOUNDS)
+  if (use_sound)
   {
-    int32_t which = (rand() % 3) + CHAN_THRUST;
+    assert(snd >= 0 && snd < NUM_SOUNDS);
+
+    int32_t which = (random_get() % 3) + CHAN_THRUST;
     for (size_t i = CHAN_THRUST; i < 4; i++)
     {
       if (!Mix_Playing(i))
