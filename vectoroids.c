@@ -54,6 +54,7 @@
 #define kZoomStart 40
 #define kOneUpScore 10000
 #define kScreenFPS 60
+#define kFrameDelay (1000 / kScreenFPS)
 
 #define kScreenWidth 480
 #define kScreenHeight 480
@@ -156,6 +157,8 @@ const char* mus_game_name = DATA_PREFIX "music/decision.s3m";
 SDL_Window* g_window = 0;
 SDL_Renderer* g_renderer = 0;
 SDL_Texture* g_texture = 0;
+Uint64 g_frame_start = 0;
+Uint64 g_frame_time = 0;
 Mix_Chunk* sounds[NUM_SOUNDS] = {0};
 Mix_Music* game_music = 0;
 #ifdef JOY_YES
@@ -661,14 +664,14 @@ title(void)
   int32_t ym = (random_get() % 10) - 5;
 
   int32_t size = 40;
-  
+
   size_t snapped = 0;
 
   bool done = false;
   int32_t angle = 0;
   for (size_t counter = 0; !done; ++counter)
   {
-    Uint64 last_time = SDL_GetTicks64();
+    g_frame_start = SDL_GetTicks64();
 
     /* Rotate rock: */
 
@@ -882,15 +885,14 @@ title(void)
     draw_segment(45 / size, 335, mkcolor(255, 255, 255), 40 / size, 0, mkcolor(255, 255, 255), x, y, angle);
 
     /* Flush and pause! */
+    g_frame_time = SDL_GetTicks64() - g_frame_start;
+
+    if (kFrameDelay > g_frame_time)
+    {
+      SDL_Delay(kFrameDelay - g_frame_time);
+    }
 
     SDL_RenderPresent(g_renderer);
-
-    Uint64 now_time = SDL_GetTicks64();
-
-    if (now_time < last_time + (1000 / kScreenFPS))
-    {
-      SDL_Delay(last_time + 1000 / kScreenFPS - now_time);
-    }
   }
 
   return quit;
@@ -901,14 +903,6 @@ title(void)
 bool
 game(void)
 {
-  bool done = false, quit = false;
-  int32_t counter = 0;
-  int32_t num_asteroids_alive = 0;
-  SDL_Event event = {0};
-  bool left_pressed = false, right_pressed = false, up_pressed = false, shift_pressed = false;
-  char str[10] = {0};
-  uint32_t now_time = 0, last_time = 0;
-
   if (!game_pending)
   {
     lives = 3;
@@ -945,13 +939,22 @@ game(void)
     }
   }
 
-  do
+  size_t counter = 0;
+  bool quit = false;
+  bool done = false;
+
+  bool left_pressed = false;
+  bool right_pressed = false;
+  bool up_pressed = false;
+  bool shift_pressed = false;
+  while (!done)
   {
-    last_time = SDL_GetTicks();
-    counter++;
+    g_frame_start = SDL_GetTicks64();
+    ++counter;
 
     /* Handle events: */
 
+    SDL_Event event = {0};
     while (SDL_PollEvent(&event) > 0)
     {
       if (event.type == SDL_QUIT)
@@ -1125,7 +1128,7 @@ game(void)
     {
       /* Slow down (unrealistic, but.. feh!) */
 
-      if ((counter % 20) == 0)
+      if (!(counter % 20))
       {
         player_xm = (player_xm * 7) / 8;
         player_ym = (player_ym * 7) / 8;
@@ -1144,9 +1147,9 @@ game(void)
 
     /* Handle player death: */
 
-    if (player_alive == 0)
+    if (!player_alive)
     {
-      player_die_timer--;
+      --player_die_timer;
 
       if (player_die_timer <= 0)
       {
@@ -1167,7 +1170,7 @@ game(void)
 
           if (!shift_pressed)
           {
-            for (size_t i = 0; i < kNumAsteroids && player_alive; i++)
+            for (size_t i = 0; i < kNumAsteroids && player_alive; ++i)
             {
               if (asteroids[i].alive)
               {
@@ -1223,7 +1226,7 @@ game(void)
 
     /* Move bullets: */
 
-    for (size_t i = 0; i < kNumBullets; i++)
+    for (size_t i = 0; i < kNumBullets; ++i)
     {
       if (bullets[i].timer >= 0)
       {
@@ -1258,7 +1261,7 @@ game(void)
 
         /* Check for collision with any asteroids! */
 
-        for (size_t j = 0; j < kNumAsteroids; j++)
+        for (size_t j = 0; j < kNumAsteroids; ++j)
         {
           if (bullets[i].timer > 0 && asteroids[j].alive)
           {
@@ -1277,17 +1280,17 @@ game(void)
 
     /* Move asteroids: */
 
-    num_asteroids_alive = 0;
+    size_t num_asteroids_alive = 0;
 
-    for (size_t i = 0; i < kNumAsteroids; i++)
+    for (size_t i = 0; i < kNumAsteroids; ++i)
     {
       if (asteroids[i].alive)
       {
-        num_asteroids_alive++;
+        ++num_asteroids_alive;
 
         /* Move asteroid: */
 
-        if ((counter % 4) == 0)
+        if (!(counter % 4))
         {
           asteroids[i].x = asteroids[i].x + asteroids[i].xm;
           asteroids[i].y = asteroids[i].y + asteroids[i].ym;
@@ -1349,9 +1352,9 @@ game(void)
             }
           }
 
-          lives--;
+          --lives;
 
-          if (lives == 0)
+          if (!lives)
           {
             if (use_sound)
             {
@@ -1369,7 +1372,7 @@ game(void)
 
     /* Move bits: */
 
-    for (size_t i = 0; i < kNumBits; i++)
+    for (size_t i = 0; i < kNumBits; ++i)
     {
       if (bits[i].timer > 0)
       {
@@ -1426,7 +1429,7 @@ game(void)
 
     /* Draw bullets: */
 
-    for (size_t i = 0; i < kNumBullets; i++)
+    for (size_t i = 0; i < kNumBullets; ++i)
     {
       if (bullets[i].timer >= 0)
       {
@@ -1478,7 +1481,7 @@ game(void)
 
     /* Draw asteroids: */
 
-    for (size_t i = 0; i < kNumAsteroids; i++)
+    for (size_t i = 0; i < kNumAsteroids; ++i)
     {
       if (asteroids[i].alive)
       {
@@ -1492,7 +1495,7 @@ game(void)
 
     /* Draw bits: */
 
-    for (size_t i = 0; i < kNumBits; i++)
+    for (size_t i = 0; i < kNumBits; ++i)
     {
       if (bits[i].timer > 0)
       {
@@ -1501,6 +1504,8 @@ game(void)
     }
 
     /* Draw score: */
+
+    char str[10] = {0};
 
     sprintf(str, "%.6ld", score);
     draw_text(str, 3, 3, 14, mkcolor(255, 255, 255));
@@ -1514,7 +1519,7 @@ game(void)
 
     /* Draw lives: */
     size_t k = 0;
-    for (size_t i = 0; i < lives; i++, k++)
+    for (size_t i = 0; i < lives; ++i, ++k)
     {
       draw_segment(16, 0, mkcolor(255, 255, 255), 4, 135, mkcolor(255, 255, 255), kScreenWidth - 10 - i * 10, 20, 90);
 
@@ -1551,9 +1556,9 @@ game(void)
 
     if (text_zoom > 0)
     {
-      if ((counter % 2) == 0)
+      if (!(counter % 2))
       {
-        text_zoom--;
+        --text_zoom;
       }
 
       draw_text(zoom_str, (kScreenWidth - (strlen(zoom_str) * text_zoom)) / 2, (kScreenHeight - text_zoom) / 2, text_zoom, mkcolor(text_zoom * (256 / kZoomStart), 0, 0));
@@ -1561,7 +1566,7 @@ game(void)
 
     /* Game over? */
 
-    if (player_alive == 0 && lives == 0)
+    if (!player_alive && !lives)
     {
       if (player_die_timer > 14)
       {
@@ -1585,24 +1590,27 @@ game(void)
 
     /* Go to next level? */
 
-    if (num_asteroids_alive == 0)
+    if (!num_asteroids_alive)
     {
-      level++;
+      ++level;
 
       reset_level();
     }
 
     /* Flush and pause! */
+    g_frame_time = SDL_GetTicks64() - g_frame_start;
+
+    if (kFrameDelay > g_frame_time)
+    {
+      SDL_Delay(kFrameDelay - g_frame_time);
+    }
 
     SDL_RenderPresent(g_renderer);
 
-    now_time = SDL_GetTicks();
-
-    if (now_time < last_time + (1000 / kScreenFPS))
-    {
-      SDL_Delay(last_time + 1000 / kScreenFPS - now_time);
-    }
-  } while (!done);
+    char titlebar[128];
+    SDL_snprintf(titlebar, sizeof(titlebar), "%ld, %ld", g_frame_start, g_frame_time);
+    SDL_SetWindowTitle(g_window, titlebar);
+  }
 
   /* Record, if a high score: */
 
@@ -1708,10 +1716,6 @@ setup(const int argc, const char* argv[])
       exit(1);
     }
   }
-
-  /* Seed random number generator: */
-
-  srand(SDL_GetTicks());
 
   /* Init SDL video: */
 
